@@ -11,6 +11,8 @@ import 'swiper/dist/css/swiper.css'
 
 Vue.config.productionTip = false
 Vue.prototype.$axios  = Axios
+Vue.prototype.HOST = './local'
+
 Vue.use(Form)
 Vue.use(FormItem)
 Vue.use(Input)

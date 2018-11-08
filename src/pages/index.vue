@@ -29,7 +29,9 @@
             }
         },
         created(){
-            this.$axios.get("/static/index.json")
+            //var url = this.HOST;
+            var url = "/static/index.json";
+            this.$axios.get(url)
             .then(res => {
                 this.headers = res.data.data;
             })

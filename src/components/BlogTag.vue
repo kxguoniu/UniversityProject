@@ -4,7 +4,7 @@
             <span class="hot-name">标签云</span>
         </div>
         <div class="biaoqian" v-for="tag in tags">
-            <a href="#">{{ tag }}</a>
+            <a href="#">{{ tag.name }}</a>
         </div>
     </div>
 </template>
@@ -18,10 +18,12 @@
             }
         },
         created(){
-            var url = "/static/tag.json";
+            //var url = "/static/tag.json";
+            var url = this.HOST + "taglist";
             this.$axios.get(url)
             .then(res => {
                 this.tags = res.data.data;
+                console.log(res.data);
             })
             .catch(error => {
                 console.log(error);

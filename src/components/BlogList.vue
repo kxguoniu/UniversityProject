@@ -3,16 +3,16 @@
             <div class="blog" v-for="blog in blogs">
                 <div class="blog-head">
                     <h1>
-                        <a href="">{{ blog.name }}</a>
+                        <a href="">{{ blog.title }}</a>
                     </h1>
                 </div>
                 <div class="blog-info">
                     <span class="span-info"><a href="#">&nbsp;{{ blog.category }} &nbsp;   </a></span>
-                    <span class="span-info"><a href="#">&nbsp;{{ blog.user }} &nbsp;   </a></span>
+                    <span class="span-info"><a href="#">&nbsp;{{ blog.author }} &nbsp;   </a></span>
                     <span class="span-info">&nbsp;{{ blog.create_time }} &nbsp;    </span>
-                    <span class="span-info">&nbsp;{{ blog.view }} 阅读&nbsp;</span>
+                    <span class="span-info">&nbsp;{{ blog.views }} 阅读&nbsp;</span>
                 </div>
-                <div class="blog-execrpt"><span>{{ blog.abstract }}     </span></div>
+                <div class="blog-execrpt"><span>{{ blog.digested }}     </span></div>
                 <div class="blog-link"><span><a href="#">阅读全文</a></span></div>
             </div>
         </div>
@@ -24,7 +24,6 @@
         data(){
             return{
                 blogs:[],
-                hots: [1,2,3],
             }
         },
         props:{
@@ -32,10 +31,17 @@
         },
         methods:{
             GetBlog(){
-                var url = "/static/Category" + this.CategoryId + ".json";
-                this.$axios.get(url)
+                //var url = "/static/Category" + this.CategoryId + ".json";
+                //this.$axios.get(url)
+                var url = this.HOST + "category";
+                this.$axios.get(url, {
+                    params:{
+                        flag: this.CategoryId
+                    }
+                })
                 .then(res => {
                     this.blogs =  res.data.data;
+                    console.log(res);
                 })
                 .catch(error => {
                     console.log(error);

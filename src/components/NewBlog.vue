@@ -4,7 +4,7 @@
             <span class="hot-name">最新文章</span>
         </div>
         <div class="hot1" v-for="newblog in newblogs">
-            <a href="#"><span class="hot-name1">{{ newblog.name }}</span></a>
+            <a href="#"><span class="hot-name1">{{ newblog.title }}</span></a>
         </div>
     </div>
 </template>
@@ -18,10 +18,13 @@
             }
         },
         created(){
-            var url = "/static/new.json";
+            //var url = "/static/new.json";
+            //this.$axios.get(url)
+            var url = this.HOST + "newblog";
             this.$axios.get(url)
             .then(res => {
                 this.newblogs = res.data.data;
+                console.log(res.data);
             })
             .catch(error => {
                 console.log(error);
