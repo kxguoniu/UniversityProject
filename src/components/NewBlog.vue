@@ -24,7 +24,6 @@
             this.$axios.get(url)
             .then(res => {
                 this.newblogs = res.data.data;
-                console.log(res.data);
             })
             .catch(error => {
                 console.log(error);

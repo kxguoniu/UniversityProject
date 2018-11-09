@@ -11,7 +11,6 @@
         components:{BlogList},
         methods:{
             GetId(){
-                console.log(this.$route.params.id);
                 return this.$route.params.id;
             }
         },

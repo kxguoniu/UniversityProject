@@ -23,7 +23,6 @@
             this.$axios.get(url)
             .then(res => {
                 this.tags = res.data.data;
-                console.log(res.data);
             })
             .catch(error => {
                 console.log(error);

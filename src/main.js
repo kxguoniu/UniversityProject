@@ -4,7 +4,7 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import Axios from 'axios'
-import { Form, FormItem, Input, Select, Option, Col, DatePicker, TimePicker, Switch, Checkbox, CheckboxGroup, Radio, RadioGroup, Button } from 'element-ui'
+import { Icon, Form, FormItem, Input, Select, Option, Col, DatePicker, TimePicker, Switch, Checkbox, CheckboxGroup, Radio, RadioGroup, Button } from 'element-ui'
 import VueAwesomeSwiper from 'vue-awesome-swiper'
 import 'swiper/dist/css/swiper.css'
 
@@ -13,6 +13,7 @@ Vue.config.productionTip = false
 Vue.prototype.$axios  = Axios
 Vue.prototype.HOST = './local'
 
+Vue.use(Icon)
 Vue.use(Form)
 Vue.use(FormItem)
 Vue.use(Input)
@@ -30,6 +31,9 @@ Vue.use(Button)
 
 
 /* eslint-disable no-new */
+let bus = new Vue()
+Vue.prototype.bus = bus
+
 new Vue({
   el: '#app',
   router,

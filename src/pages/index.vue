@@ -10,6 +10,7 @@
         <div class="html-body">
             <router-view></router-view>
             <BodyRight></BodyRight>
+            <Scroll></Scroll>
         </div>
         <div class="footer html-bottom"></div>
     </div>
@@ -17,11 +18,12 @@
 
 <script type="text/javascript">
     import BodyRight from './BodyRight'
-
+    import Scroll from './scroll'
     export default{
         name:"index",
         components:{
             BodyRight,
+            Scroll,
         },
         data(){
             return{
@@ -44,7 +46,7 @@
 
 <style type="text/css">
     .html-header{
-        background-color: #0b445b;
+        background-color: #0b445b !important;
         min-width: 800px;
         margin-bottom: 20px;
     }

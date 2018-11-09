@@ -28,7 +28,7 @@
         background-color: #3D4450;
         padding-top: 5px;
         padding-left: 1%;
-        margin-bottom: 40px;
+        margin-bottom: 30px;
     }
     .search-group {
         float: left;

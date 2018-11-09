@@ -2,6 +2,7 @@
     <div class="body-right">
         <Login v-if="status1"></Login>
         <Search v-if="status2"></Search>
+        <BlogToc v-if="toc"></BlogToc>
         <NewBlog v-if="status2"></NewBlog>
         <TimeGroup v-if="status2"></TimeGroup>
         <BlogTag v-if="status2"></BlogTag>
@@ -14,6 +15,7 @@
     import NewBlog from '../components/NewBlog'
     import TimeGroup from '../components/TimeGroup'
     import BlogTag from '../components/BlogTag'
+    import BlogToc from '../components/BlogToc'
     export default{
         name:"bodyright",
         components:{
@@ -21,12 +23,21 @@
             Search,
             NewBlog,
             TimeGroup,
-            BlogTag
+            BlogTag,
+            BlogToc,
+        },
+        mounted(){
+            var _this = this
+            this.bus.$on('add', function(val1,val2){
+                _this.status1 = val1;
+                _this.toc = val2;
+            })
         },
         data(){
             return{
                 status1:true,
                 status2:true,
+                toc:false,
             }
         }
     }
