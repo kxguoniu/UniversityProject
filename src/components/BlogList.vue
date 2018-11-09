@@ -40,11 +40,17 @@
                 blogs:[],
                 blogshow:false,
                 blogdetail:[],
-                Tocs:"",
             }
         },
         props:{
             CategoryId:String,
+        },
+        mounted(){
+            var _this = this
+            this.bus.$on('blogdetail', function(val1,val2){
+                _this.blogshow = val1;
+                _this.blogdetail = val2;
+            })
         },
         methods:{
             GetBlog(){
@@ -59,7 +65,7 @@
                 .then(res => {
                     this.blogshow = false;
                     this.blogs =  res.data.data;
-                    console.log(res);
+                    this.bus.$emit('toc', '', false);
                 })
                 .catch(error => {
                     console.log(error);
@@ -67,6 +73,7 @@
             },
             ShowDetail(Id){
                 var url = this.HOST + "detail";
+                console.log(url+Id);
                 this.$axios.get(url, {
                     params:{
                         id:Id
@@ -76,13 +83,16 @@
                     if (res.data.status == 0){
                         this.blogshow = true;
                         var blog = res.data.data;
-                        var result = blog.body.match(/(<div class="toc">(?:.|\n)*<\/ul>\n<\/div>)/)[0];
+                        var result = blog.body.match(/(<div class="toc">(?:.|\n)*<\/ul>\n<\/div>)/);
+                        if (result != null){
+                            result = result[0];
+                            this.bus.$emit('toc', result,true);
+                        } else{
+                            this.bus.$emit('toc', '', false);
+                        }
                         blog.body = blog.body.replace(/(<div class="toc">(?:.|\n)*<\/ul>\n<\/div>)/, "");
-                        this.Tocs = result;
                         this.blogdetail = blog;
-                        this.bus.$emit('add', false,true);
-                        this.bus.$emit('toc', result);
-                        console.log(result);
+                        this.bus.$emit('add', false);
                     }
                 })
                 .catch(error => {

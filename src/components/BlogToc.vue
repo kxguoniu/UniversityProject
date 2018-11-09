@@ -1,5 +1,5 @@
 <template lang="html">
-    <div class="blogtoc">
+    <div v-if="status" class="blogtoc">
         <p><strong class="toc-title">文章目录</strong></p>
         <div class="entity" v-html="toc"></div>
     </div>
@@ -11,12 +11,14 @@
         data(){
             return{
                 toc:"",
+                status:false,
             }
         },
         mounted(){
             var _this = this;
-            this.bus.$on('toc', function(val){
-                _this.toc = val;
+            this.bus.$on('toc', function(val1,val2){
+                _this.toc = val1;
+                _this.status = val2;
             })
         }
     }
