@@ -8,7 +8,7 @@ import pymysql
 import json
 
 define("port", default=8888, help="run on the given port", type=int)
-DB = pymysql.Connection(host='*', database='blog', user='root', password='*', charset='utf8')
+DB = pymysql.Connection(host='123.206.95.123', database='blog', user='root', password='Nkx.29083X', charset='utf8')
 
 dict_session = {}
 
@@ -99,6 +99,7 @@ class CateGoryHandler(BaseHandler):
 
 
 class TagBlogHandler(BaseHandler):
+    #返回标签对应的博文
     def initialize(self):
         self.db = DB
 
@@ -129,11 +130,12 @@ class TagBlogHandler(BaseHandler):
 
 
 class TagListHandler(BaseHandler):
+    #返回标签列表
     def initialize(self):
         self.db = DB
 
     def get(self):
-        sql = "select tag.name from tag"
+        sql = "select * from tag"
         cursor = self.db.cursor(cursor=pymysql.cursors.DictCursor)
         number = cursor.execute(sql)
         results = cursor.fetchall()

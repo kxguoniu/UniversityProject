@@ -3,7 +3,7 @@
             <div v-if="!blogshow" class="blog" v-for="blog in blogs">
                 <div class="blog-head">
                     <h1>
-                        <a href="#">{{ blog.title }}</a>
+                        <a @click="ShowDetail(blog.id)" href="#">{{ blog.title }}</a>
                     </h1>
                 </div>
                 <div class="blog-info">
@@ -18,7 +18,7 @@
             <div v-if="blogshow" class="blog">
                 <div class="blog-head">
                     <h1>
-                        <a>{{ blogdetail.title }}</a>
+                        <a >{{ blogdetail.title }}</a>
                     </h1>
                 </div>
                 <div class="blog-info">
@@ -50,6 +50,10 @@
             this.bus.$on('blogdetail', function(val1,val2){
                 _this.blogshow = val1;
                 _this.blogdetail = val2;
+            })
+            this.bus.$on('taglist', function(val1, val2){
+                _this.blogshow = val1;
+                _this.blogs = val2;
             })
         },
         methods:{

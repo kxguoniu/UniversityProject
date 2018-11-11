@@ -4,7 +4,7 @@
             <span class="hot-name">标签云</span>
         </div>
         <div class="biaoqian" v-for="tag in tags">
-            <a href="#">{{ tag.name }}</a>
+            <a @click="TagDetail(tag.id)" href="#">{{ tag.name }}</a>
         </div>
     </div>
 </template>
@@ -27,6 +27,21 @@
             .catch(error => {
                 console.log(error);
             })
+        },
+        methods:{
+            TagDetail(val){
+                var url = this.HOST + 'tagblog';
+                this.$axios.get(url, {
+                    params:{
+                        tag:val
+                    }
+                })
+                .then(res => {
+                    var blog = res.data.data;
+                    this.bus.$emit('taglist', false, blog);
+                    this.bus.$emit('toc', '', false);
+                })
+            }
         }
     }
 </script>
