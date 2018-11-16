@@ -10,7 +10,6 @@
         <div class="html-body">
             <router-view></router-view>
             <BodyRight></BodyRight>
-            <Scroll></Scroll>
         </div>
         <div class="footer html-bottom"></div>
     </div>
@@ -18,12 +17,10 @@
 
 <script type="text/javascript">
     import BodyRight from './BodyRight'
-    import Scroll from './scroll'
     export default{
         name:"index",
         components:{
             BodyRight,
-            Scroll,
         },
         data(){
             return{

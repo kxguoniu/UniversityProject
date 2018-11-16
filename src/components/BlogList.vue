@@ -76,7 +76,10 @@
                     if (res.data.status == 0){
                         this.blogshow = true;
                         var blog = res.data.data;
-                        var result = blog.body.match(/(<div class="toc">(?:.|\n)*<\/ul>\n<\/div>)/)[0];
+                        var result = blog.body.match(/(<div class="toc">(?:.|\n)*<\/ul>\n<\/div>)/);
+                        if (result != null){
+                            result = result[0]
+                        }
                         blog.body = blog.body.replace(/(<div class="toc">(?:.|\n)*<\/ul>\n<\/div>)/, "");
                         this.Tocs = result;
                         this.blogdetail = blog;
@@ -108,7 +111,7 @@
         width: 65%;
     }
     .blog {
-        background-color: #FFFFFF;
+        background-color: #d8d4d473 !important;
         width: 100%;
         margin-bottom: 35px;
     }

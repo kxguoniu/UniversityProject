@@ -22,7 +22,7 @@
             var url = this.HOST + "taglist";
             this.$axios.get(url)
             .then(res => {
-                this.tags = res.data.data;
+                this.tags = res.data.data.tag;
             })
             .catch(error => {
                 console.log(error);
