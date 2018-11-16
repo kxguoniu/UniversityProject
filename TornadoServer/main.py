@@ -10,7 +10,7 @@ import json
 import os
 
 define("port", default=8888, help="run on the given port", type=int)
-DB = pymysql.Connection(host='123.206.95.123', database='blog', user='root', password='Nkx.29083X', charset='utf8')
+DB = pymysql.Connection(host='123.206.95.123', database='blog', user='root', password='*', charset='utf8')
 
 LOCKFILE = os.path.dirname(os.path.abspath(__file__)) + "/system.lock"
 
@@ -416,7 +416,7 @@ def skynet(lockpath):
     netstatus = False
     lastin = 0
     lastout = 0
-    db = pymysql.Connection(host='123.206.95.123', database='blog', user='root', password='Nkx.29083X', charset='utf8')
+    db = pymysql.Connection(host='123.206.95.123', database='blog', user='root', password='*', charset='utf8')
     sql = """insert into skynet (min1,min5,min15,uscpu,sycpu,total,used,free,netin,netout,create_time) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
     cursor = db.cursor(cursor=pymysql.cursors.DictCursor)
     import time
