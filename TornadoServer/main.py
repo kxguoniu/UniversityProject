@@ -164,6 +164,7 @@ class CateGoryHandler(BaseHandler):
 
 
 class TagBlogHandler(BaseHandler):
+    #返回标签对应的博文
     def initialize(self):
         self.db = DB
 
@@ -194,11 +195,16 @@ class TagBlogHandler(BaseHandler):
 
 
 class TagListHandler(BaseHandler):
+    #返回标签列表
     def initialize(self):
         self.db = DB
 
     def get(self):
+<<<<<<< HEAD
         tagsql = "select tag.name from tag"
+=======
+        sql = "select * from tag"
+>>>>>>> 8aca13b5a498a108c0c63dc124cebbfe541abb0c
         cursor = self.db.cursor(cursor=pymysql.cursors.DictCursor)
         number = cursor.execute(tagsql)
         results = cursor.fetchall()

@@ -3,7 +3,7 @@
             <div v-if="!blogshow" class="blog" v-for="blog in blogs">
                 <div class="blog-head">
                     <h1>
-                        <a href="#">{{ blog.title }}</a>
+                        <a @click="ShowDetail(blog.id)" href="#">{{ blog.title }}</a>
                     </h1>
                 </div>
                 <div class="blog-info">
@@ -18,7 +18,7 @@
             <div v-if="blogshow" class="blog">
                 <div class="blog-head">
                     <h1>
-                        <a>{{ blogdetail.title }}</a>
+                        <a >{{ blogdetail.title }}</a>
                     </h1>
                 </div>
                 <div class="blog-info">
@@ -40,11 +40,21 @@
                 blogs:[],
                 blogshow:false,
                 blogdetail:[],
-                Tocs:"",
             }
         },
         props:{
             CategoryId:String,
+        },
+        mounted(){
+            var _this = this
+            this.bus.$on('blogdetail', function(val1,val2){
+                _this.blogshow = val1;
+                _this.blogdetail = val2;
+            })
+            this.bus.$on('taglist', function(val1, val2){
+                _this.blogshow = val1;
+                _this.blogs = val2;
+            })
         },
         methods:{
             GetBlog(){
@@ -59,7 +69,7 @@
                 .then(res => {
                     this.blogshow = false;
                     this.blogs =  res.data.data;
-                    console.log(res);
+                    this.bus.$emit('toc', '', false);
                 })
                 .catch(error => {
                     console.log(error);
@@ -67,6 +77,7 @@
             },
             ShowDetail(Id){
                 var url = this.HOST + "detail";
+                console.log(url+Id);
                 this.$axios.get(url, {
                     params:{
                         id:Id
@@ -78,14 +89,18 @@
                         var blog = res.data.data;
                         var result = blog.body.match(/(<div class="toc">(?:.|\n)*<\/ul>\n<\/div>)/);
                         if (result != null){
+<<<<<<< HEAD
                             result = result[0]
+=======
+                            result = result[0];
+                            this.bus.$emit('toc', result,true);
+                        } else{
+                            this.bus.$emit('toc', '', false);
+>>>>>>> 8aca13b5a498a108c0c63dc124cebbfe541abb0c
                         }
                         blog.body = blog.body.replace(/(<div class="toc">(?:.|\n)*<\/ul>\n<\/div>)/, "");
-                        this.Tocs = result;
                         this.blogdetail = blog;
-                        this.bus.$emit('add', false,true);
-                        this.bus.$emit('toc', result);
-                        console.log(result);
+                        this.bus.$emit('add', false);
                     }
                 })
                 .catch(error => {
