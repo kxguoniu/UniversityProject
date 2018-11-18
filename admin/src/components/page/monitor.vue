@@ -1,15 +1,15 @@
 <template>
-    <div class="asd">
-        <el-row :gutter="20" class="montorrow">
+    <div class="asd" v-loading="loading" element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)">
+        <el-row v-if="!loading" :gutter="20" class="montorrow">
             <keyboard :net="net" :create_time="create_time" :height="height" :width="width" />
         </el-row>
-        <el-row :gutter="20" class="montorrow">
+        <el-row v-if="!loading" :gutter="20" class="montorrow">
             <line-marker :memory="memory" :create_time="create_time" :height="height" :width="width" />
         </el-row>
-        <el-row :gutter="20" class="montorrow">
+        <el-row v-if="!loading" :gutter="20" class="montorrow">
             <mix-chart :cpu="cpu" :create_time="create_time" :height="height" :width="width" />
         </el-row>
-        <el-row :gutter="20" class="montorrow">
+        <el-row v-if="!loading" :gutter="20" class="montorrow">
             <Load :load="load" :create_time="create_time" :height="height" :width="width" />
         </el-row>
     </div>
@@ -32,6 +32,7 @@
                 create_time:[],
                 height: '550px',
                 width: '100%',
+                loading: true,
             }
         },
         components: { keyboard, lineMarker, mixChart, Load },
@@ -63,6 +64,7 @@
                 .catch(error => {
                     console.log(error)
                 })
+                this.loading = false
             }
         },
     }
