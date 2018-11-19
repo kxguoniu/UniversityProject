@@ -37,7 +37,27 @@ export default {
   },
   data() {
     return {
-      chart2: null
+      chart2: null,
+      option: {}
+    }
+  },
+  watch:{
+    create_time: {
+        handler(newValue, oldValue) {
+            if (this.chart2) {
+                if (newValue[0] != oldValue[0]) {
+                    const xAxisData = this.create_time;
+                    var data = this.net.netout;
+                    var data2 = this.net.netin;
+
+                    this.option.xAxis[0].data = xAxisData;
+                    this.option.series[0].data = data2;
+                    this.option.series[1].data = data;
+                    this.chart2.clear()
+                    this.chart2.setOption(this.option);
+                }
+            }
+        }
     }
   },
   mounted() {
@@ -84,7 +104,7 @@ export default {
       xAxisData = this.create_time;
       data = this.net.netout;
       data2 = this.net.netin;
-      this.chart2.setOption(
+      this.option = 
         {
           backgroundColor: '#08263a',
           grid: {
@@ -235,7 +255,8 @@ export default {
           animationDelayUpdate(idx) {
             return idx * 20
           }
-        })
+        }
+      this.chart2.setOption(this.option)
     }
   }
 }

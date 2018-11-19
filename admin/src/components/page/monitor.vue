@@ -33,20 +33,26 @@
                 height: '550px',
                 width: '100%',
                 loading: true,
+                sort: true,
             }
         },
         components: { keyboard, lineMarker, mixChart, Load },
         created(){
+            this.loading = true
             this.init()
+            this.loading = false
+            this.Loop()
         },
         methods:{
             init(){
+                this.sort = !this.sort
                 let url = this.HOST + 'system'
                 this.$axios({
                     method: 'get',
                     url: url,
                     params:{
-                        number: 50
+                        limit: 60,
+                        sort: this.sort
                     }
                 })
                 .then(res => {
@@ -58,13 +64,17 @@
                         this.create_time = res.data.data.create_time;
                         //console.log(this.net,this.load,this.cpu,this.memory,this.create_time)
                     } else {
-                        console.log(res.data.msg)
+                        this.$message.error(res.data.msg)
                     }
                 })
                 .catch(error => {
+                    this.loading = false
+                    this.$message.error('请求失败')
                     console.log(error)
                 })
-                this.loading = false
+            },
+            Loop(){
+                setInterval(this.init, 60000)
             }
         },
     }
@@ -77,5 +87,8 @@
         text-align: center;
         height: 600px;
         width: 98%;
+    }
+    .asd{
+        height: 100%;
     }
 </style>

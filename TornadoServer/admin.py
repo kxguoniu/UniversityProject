@@ -35,12 +35,9 @@ class BlogHandler(BaseHandler):
         flag = self.get_argument("flag",'')
         page = self.get_argument("page",'1')
         size = self.get_argument("size",'5')
-
-        cursor = self.db.cursor(cursor=pymysql.cursors.DictCursor)
+        
         sql = "select blog.*,category.name from blog,category where blog.category_id = category.id and category.name = %s"
-        number = cursor.execute(sql,(flag))
-        results = cursor.fetchall()
-        cursor.close()
+        number,results = sqlconn.exec_sql_feach(sql,(flag))
 
         self.write(json.dumps(results))
 
@@ -58,10 +55,8 @@ class LoginHandler(BaseHandler):
         user = self.get_argument("user")
         pwd = self.get_argument("pwd")
 
-        cursor = self.db.cursor()
         sql = "select user from user where user=%s and pwd=%s"
-        number = cursor.execute(sql,(user,pwd))
-        cursor.close()
+        number,results = sqlconn.exec_sql_feach(sql,(user,pwd))
         if not number:
             self.redirect("/login")
         
@@ -86,17 +81,16 @@ class CateGoryHandler(BaseHandler):
         page = self.get_argument("page", 1)
         size = self.get_argument("limit", 20)
         total = self.get_argument("total", 0)
-        cursor = self.db.cursor(cursor=pymysql.cursors.DictCursor)
+
         sql = "select blog.id,blog.title,blog.weight,author.name as author,category.name as category,blog.create_time,blog.change_time,blog.views,blog.digested from blog left join category on blog.category_id = category.id left join author on blog.author_id = author.id "
         pagesize = (int(page)-1)*int(size)
         size = int(size)
         if flag != '1':
             sql += "where category.id=%s limit %s,%s"
-            number = cursor.execute(sql,(flag,pagesize,size))
+            number,results = sqlconn.exec_sql_feach(sql,(flag,pagesize,size))
         elif flag == '1':
             sql += "limit %s,%s"
-            number = cursor.execute(sql,(pagesize,size))
-        results = cursor.fetchall()
+            number,results = sqlconn.exec_sql_feach(sql,(pagesize,size))
         if results:
             for i in results:
                 i['create_time'] = str(i['create_time'])
@@ -108,12 +102,10 @@ class CateGoryHandler(BaseHandler):
         total = int(total)
         if total == 0:
             totalsql = "select count(id) as id from blog"
-            number = cursor.execute(totalsql)
-            results = cursor.fetchall()
+            number,results = sqlconn.exec_sql_feach(totalsql)
             re_data['total'] = results[0]['id']
         else:
             re_data['total'] = total
-        cursor.close()
         self.write(re_data)
 
     def post(self):
@@ -122,13 +114,13 @@ class CateGoryHandler(BaseHandler):
         category = body['category']
         weight = body['weight']
         blogid = body['id']
-        cursor = self.db.cursor(cursor=pymysql.cursors.DictCursor)
+ 
         categorysql = "select id from category where category.name=%s"
-        number = cursor.execute(categorysql,(category))
+        number,results = sqlconn.exec_sql_feach(categorysql,(category))
         if number:
             categoryid = cursor.fetchall()[0]['id']
             blogsql = "update blog set title=%s,category_id=%s,weight=%s where id=%s"
-            blognumber = cursor.execute(blogsql,(title,categoryid,weight,blogid))
+            blognumber = sqlconn.exec_sql(blogsql,(title,categoryid,weight,blogid))
             if blognumber:
                 re_data = {'status':0, 'msg':'修改成功'}
             else:
@@ -142,22 +134,19 @@ class CateGoryHandler(BaseHandler):
         listid = self.get_argument('id', {})
         if blogid != -1 and type(blogid) == int:
             blogid = int(blogid)
-            cursor = self.db.cursor(cursor=pymysql.cursors.DictCursor)
-            number = cursor.execute(deletesql,(blogid))
+
+            number = sqlconn.exec_sql(deletesql,(blogid))
             if number:
                 re_data = {'status':0, 'msg':'删除成功'}
             else:
                 re_data = {'status':1, 'msg':'删除失败'}
-            cursor.close()
             return self.write(re_data)
         elif listid:
             listid = json.loads(listid)
-            cursor = self.db.cursor(cursor=pymysql.cursors.DictCursor)
             deletesql = "delete from blog where id=%s"
             for i in listid:
                 print(i)
-                cursor.execute(deletesql,(listid[i]))
-            cursor.close()
+                number = sqlconn.exec_sql(deletesql,(listid[i]))
             re_data = {'status':0, 'msg':'删除成功'}
             return self.write(re_data)
         else:
@@ -181,10 +170,7 @@ class TagBlogHandler(BaseHandler):
         else:
             return self.finish({'status': 1, 'msg':'无效的查询参数' , 'data':''})
         
-        cursor = self.db.cursor(cursor=pymysql.cursors.DictCursor)
-        number = cursor.execute(sql,(tag))
-        results = cursor.fetchall()
-        cursor.close()
+        number,results = sqlconn.exec_sql_feach(sql,(tag))
         if results:
             for i in results:
                 i['create_time'] = str(i['create_time'])
@@ -202,16 +188,16 @@ class TagListHandler(BaseHandler):
 
     def get(self):
         tagsql = "select tag.name from tag"
-        cursor = self.db.cursor(cursor=pymysql.cursors.DictCursor)
-        number = cursor.execute(tagsql)
-        results = cursor.fetchall()
+
+        number,results = sqlconn.exec_sql_feach(tagsql)
+
         lists = {}
         lists['tag'] = results
         categorysql = "select name from category"
-        number = cursor.execute(categorysql)
-        results = cursor.fetchall()
+        number,results = sqlconn.exec_sql_feach(categorysql)
+
         lists['category'] = results
-        cursor.close()
+
 
         if results:
             re_data = {'status': 1, 'msg':'' , 'data':lists}
@@ -232,9 +218,8 @@ class DetailHandler(BaseHandler):
         sql += "left join author on blog.author_id = author.id "
         if Id:
             sql += "where blog.id = %s"
-            cursor = self.db.cursor(cursor=pymysql.cursors.DictCursor)
-            number = cursor.execute(sql,(Id))
-            results = cursor.fetchall()
+
+            number,results = sqlconn.exec_sql_feach(sql,(Id))
         else:
             return self.finish({'status': 1, 'msg':'无效的查询参数' , 'data':''})
 
@@ -245,8 +230,8 @@ class DetailHandler(BaseHandler):
             results['body'] = markdown.markdown(results['body'], extensions=['markdown.extensions.extra','markdown.extensions.toc','markdown.extensions.codehilite'])
             
             tagsql = "select tag.name from blogtag LEFT JOIN tag on tag.id = blogtag.tag_id where blogtag.blog_id =%s"
-            number = cursor.execute(tagsql,(results['id']))
-            taglist = cursor.fetchall()
+            number,taglist = sqlconn.exec_sql_feach(tagsql,(results['id']))
+  
             listtag = []
             for i in taglist:
                 listtag.append(i['name'])
@@ -265,36 +250,33 @@ class BlogSaveHandler(BaseHandler):
         body = self.request.body
         body = json.loads(body)
         print(body)
-        cursor = self.db.cursor(cursor=pymysql.cursors.DictCursor)
+
         categorysql = "select id from category where category.name=%s"
-        number = cursor.execute(categorysql,(body['category']))
+        number,results = sqlconn.exec_sql_feach(categorysql,(body['category']))
         if number:
-            results = cursor.fetchall()
             category_id = results[0]['id']
             print('category_id',type(category_id))
         authorsql = "select id from author where author.name=%s"
-        number = cursor.execute(authorsql,(body['author']))
+        number,results = sqlconn.exec_sql_feach(authorsql,(body['author']))
         if number:
-            results = cursor.fetchall()
             author_id = results[0]['id']
             print('author_id',type(author_id))
         print(type(body['weight']))
         sql = """insert into blog (title,body,digested,author_id,category_id,weight) values (%s,%s,%s,%s,%s,%s)"""
-        number = cursor.execute(sql,(body['title'],body['content'],body['content_short'],author_id,category_id,body['weight']))
+        number,results = sqlconn.exec_sql_feach(sql,(body['title'],body['content'],body['content_short'],author_id,category_id,body['weight']))
         if number:
-            cursor.execute("""select id from blog where blog.title=%s""",(body['title']))
-            blog_id = cursor.fetchall()[0]['id']
+            number,blog_id = sqlconn.exec_sql_feach("""select id from blog where blog.title=%s""",(body['title']))
+            blog_id = blog_id[0]['id']
             print('blog_id',blog_id)
             for tag in body['taglist']:
                 tagsql = "select id from tag where tag.name=%s"
-                number = cursor.execute(tagsql,(tag))
+                number,tag_id = sqlconn.exec_sql_feach(tagsql,(tag))
                 if number:
-                    tag_id = cursor.fetchall()[0]['id']
+                    tag_id = tag_id[0]['id']
                     tagblogsql = """insert into blogtag (blog_id,tag_id) values (%s,%s)"""
-                    number = cursor.execute(tagblogsql,(blog_id,tag_id))
+                    number = sqlconn.exec_sql(tagblogsql,(blog_id,tag_id))
                 else:
                     pass
-        cursor.close()
         re_data = {'status': 0, 'msg':'查无此人' , 'data': body}
         self.write(re_data)
 
@@ -309,10 +291,8 @@ class NewBlogHandler(BaseHandler):
         sql += "left join category on blog.category_id = category.id "
         sql += "left join author on blog.author_id = author.id "
         sql += "ORDER BY blog.create_time DESC limit 5"
-        cursor = self.db.cursor(cursor=pymysql.cursors.DictCursor)
-        number = cursor.execute(sql)
-        results = cursor.fetchall()
-        cursor.close()
+
+        number,results = sqlconn.exec_sql_feach(sql)
 
         if results:
             for i in results:
@@ -370,9 +350,9 @@ class SystemHandler(BaseHandler):
         else:
             systemsql = "select * from skynet order by skynet.create_time limit %s"
         systemsql = "select * from skynet order by skynet.create_time desc limit %s"
-        cursor = self.db.cursor(cursor=pymysql.cursors.DictCursor)
-        number = cursor.execute(systemsql,(limits))
-        results = cursor.fetchall()
+
+        number,results = sqlconn.exec_sql_feach(systemsql,(limits))
+
         r_data = {}
 
         function = lambda x: [x['min1'],x['min5'],x['min15'],x['uscpu'],x['sycpu'],x['total'],x['used'],x['free'],x['netin'],-x['netout'],str(x['create_time'])[11:16]]
@@ -425,6 +405,30 @@ def main():
     finally:
         LockFile(False)
         print('清理结束')
+        stop_thread(t)
+
+
+
+def _async_raise(tid, exctype):
+    import ctypes
+    import inspect
+    """raises the exception, performs cleanup if needed"""
+    tid = ctypes.c_long(tid)
+    if not inspect.isclass(exctype):
+        exctype = type(exctype)
+    res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
+    if res == 0:
+        raise ValueError("invalid thread id")
+    if res == 1:
+        print('cheonggong')
+    elif res != 1:
+        # """if it returns a number greater than one, you're in trouble,
+        # and you should call it again with exc=NULL to revert the effect"""
+        ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
+        raise SystemError("PyThreadState_SetAsyncExc failed")
+ 
+def stop_thread(thread):
+    _async_raise(thread.ident, SystemExit)
 
 def LoopConn(val):
     import time

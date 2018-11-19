@@ -43,10 +43,39 @@ export default {
   },
   data() {
     return {
-        className: 'classname1',
-        id: 'chart1',
         chart1: null,
         option: {}
+    }
+  },
+  watch:{
+    create_time: {
+        handler(newValue, oldValue) {
+            if (this.chart1) {
+                if (newValue[0] != oldValue[0]) {
+                    const xData = this.create_time;
+                    var data1 = this.memory.used;
+                    var data2 = this.memory.free;
+                    var data3 = this.memory.total;
+                    // 之前的data
+                    var dataZoom = this.option.dataZoom
+
+                    // 获取的option
+                    this.option = self.chart1.getOption()
+                    //console.log(this.option.dataZoom[0].start,this.option.dataZoom[0].end,this.option.dataZoom[0].height,this.option.dataZoom[0].bottom)
+                    //console.log(this.option.dataZoom[1].start,this.option.dataZoom[1].end,this.option.dataZoom[1].height)
+                    dataZoom[0].start = this.option.dataZoom[0].start
+                    dataZoom[0].end = this.option.dataZoom[0].end
+                    this.option.dataZoom = dataZoom;
+                    this.option.xAxis[0].data = xData;
+                    this.option.series[0].data = data3;
+                    this.option.series[1].data = data1;
+                    this.option.series[2].data = data2;
+                    this.chart1.clear()
+                    this.chart1.setOption(this.option);
+                    //this.chart4.resize();
+                }
+            }
+        }
     }
   },
   created(){
@@ -165,31 +194,32 @@ export default {
                             }
                         }
                     }],
+                    // 下面的左右拉条
                     dataZoom: [{
-          show: true,
-          height: 30,
-          xAxisIndex: [
-            0
-          ],
-          bottom: 30,
-          start: 10,
-          end: 80,
-          handleIcon: 'path://M306.1,413c0,2.2-1.8,4-4,4h-59.8c-2.2,0-4-1.8-4-4V200.8c0-2.2,1.8-4,4-4h59.8c2.2,0,4,1.8,4,4V413z',
-          handleSize: '110%',
-          handleStyle: {
-            color: '#d3dee5'
-          },
-          textStyle: {
-            color: '#fff' },
-          borderColor: '#90979c'
+                      show: true,
+                      height: 30,
+                      xAxisIndex: [
+                        0
+                      ],
+                      bottom: 30,
+                      start: 10,
+                      end: 80,
+                      handleIcon: 'path://M306.1,413c0,2.2-1.8,4-4,4h-59.8c-2.2,0-4-1.8-4-4V200.8c0-2.2,1.8-4,4-4h59.8c2.2,0,4,1.8,4,4V413z',
+                      handleSize: '110%',
+                      handleStyle: {
+                        color: '#d3dee5'
+                      },
+                      textStyle: {
+                        color: '#fff' },
+                      borderColor: '#90979c'
 
-        }, {
-          type: 'inside',
-          show: true,
-          height: 15,
-          start: 1,
-          end: 35
-        }],
+                    }, {
+                      type: 'inside',
+                      show: true,
+                      height: 15,
+                      start: 1,
+                      end: 35
+                    }],
                     // 三条线数据
                     series: [{
                         name: 'total',

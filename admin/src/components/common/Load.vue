@@ -43,10 +43,39 @@ export default {
   },
   data() {
     return {
-        className: 'classname1',
-        id: 'chart4',
         chart4: null,
         option: {}
+    }
+  },
+  watch:{
+    create_time: {
+        handler(newValue, oldValue) {
+            if (this.chart4) {
+                if (newValue[0] != oldValue[0]) {
+                    const xData = this.create_time;
+                    var data1 = this.load.min1;
+                    var data2 = this.load.min5;
+                    var data3 = this.load.min15;
+                    // 之前的data
+                    var dataZoom = this.option.dataZoom
+
+                    // 获取的option
+                    this.option = self.chart4.getOption()
+                    //console.log(this.option.dataZoom[0].start,this.option.dataZoom[0].end,this.option.dataZoom[0].height,this.option.dataZoom[0].bottom)
+                    //console.log(this.option.dataZoom[1].start,this.option.dataZoom[1].end,this.option.dataZoom[1].height)
+                    dataZoom[0].start = this.option.dataZoom[0].start
+                    dataZoom[0].end = this.option.dataZoom[0].end
+                    this.option.dataZoom = dataZoom;
+                    this.option.xAxis[0].data = xData;
+                    this.option.series[0].data = data1;
+                    this.option.series[1].data = data2;
+                    this.option.series[2].data = data3;
+                    this.chart4.clear()
+                    this.chart4.setOption(this.option);
+                    //this.chart4.resize();
+                }
+            }
+        }
     }
   },
   created(){
@@ -178,17 +207,18 @@ export default {
                       handleStyle: {
                         color: '#d3dee5'
                       },
-                      textStyle: {
-                        color: '#fff' },
-                      borderColor: '#90979c'
+                      textStyle: { color: '#fff' },
+                      borderColor: '#90979c' 
+                      },
 
-                    }, {
-                      type: 'inside',
-                      show: true,
-                      height: 15,
-                      start: 1,
-                      end: 35
+                      {
+                          type: 'inside',
+                          show: true,
+                          height: 15,
+                          start: 1,
+                          end: 35
                     }],
+                    
                     // 三条线数据
                     series: [{
                         name: 'min1',

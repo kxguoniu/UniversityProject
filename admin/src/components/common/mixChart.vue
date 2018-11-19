@@ -37,7 +37,37 @@ export default {
   },
   data() {
     return {
-      chart3: null
+      chart3: null,
+      option: {}
+    }
+  },
+  watch:{
+    create_time: {
+        handler(newValue, oldValue) {
+            if (this.chart3) {
+                if (newValue[0] != oldValue[0]) {
+                    const xData = this.create_time;
+                    var data1 = this.cpu.sycpu;
+                    var data2 = this.cpu.uscpu;
+                    // 之前的data
+                    var dataZoom = this.option.dataZoom
+
+                    // 获取的option
+                    this.option = self.chart3.getOption()
+                    //console.log(this.option.dataZoom[0].start,this.option.dataZoom[0].end,this.option.dataZoom[0].height,this.option.dataZoom[0].bottom)
+                    //console.log(this.option.dataZoom[1].start,this.option.dataZoom[1].end,this.option.dataZoom[1].height)
+                    dataZoom[0].start = this.option.dataZoom[0].start
+                    dataZoom[0].end = this.option.dataZoom[0].end
+                    this.option.dataZoom = dataZoom;
+                    this.option.xAxis[0].data = xData;
+                    this.option.series[0].data = data1;
+                    this.option.series[1].data = data2;
+                    this.chart3.clear()
+                    this.chart3.setOption(this.option);
+                    //this.chart4.resize();
+                }
+            }
+        }
     }
   },
   mounted() {
@@ -84,7 +114,7 @@ export default {
       var data3 = [];
       var data1 = this.cpu.sycpu;
       var data2 = this.cpu.uscpu;
-      this.chart3.setOption({
+      this.option = {
         backgroundColor: '#344b58',
         // 标题
         title: {
@@ -271,7 +301,8 @@ export default {
           data: data3
         }
         ]
-      })
+      }
+      this.chart3.setOption(this.option)
     }
   }
 }
