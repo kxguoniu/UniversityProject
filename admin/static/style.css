@@ -39,6 +39,7 @@
     animation-timing-function: ease-in-out;
 }
 
+/*
 .waifu-tool {
     display: none;
     color: #aaa;
@@ -70,7 +71,7 @@
     transform: scale(1.5);
     animation: none;
 }
-
+*/
 
 .waifu #live2d{
     position: relative;

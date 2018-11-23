@@ -4,10 +4,11 @@ import Router from 'vue-router';
 Vue.use(Router);
 
 export default new Router({
+    mode: 'history',
     routes: [
         {
             path: '/',
-            redirect: '/dashboard'
+            redirect: '/login'
         },
         {
             path: '/',
@@ -20,19 +21,14 @@ export default new Router({
                     meta: { title: '系统首页' }
                 },
                 {
-                    path: '/icon',
-                    component: resolve => require(['../components/page/Icon.vue'], resolve),
-                    meta: { title: '自定义图标' }
-                },
-                {
                     path: '/table',
                     component: resolve => require(['../components/page/BaseTable.vue'], resolve),
                     meta: { title: '博文列表' }
                 },
                 {
-                    path: '/tabs',
+                    path: '/message',
                     component: resolve => require(['../components/page/Tabs.vue'], resolve),
-                    meta: { title: 'tab选项卡' }
+                    meta: { title: '系统消息' }
                 },
                 {
                     path: '/line',
@@ -45,17 +41,6 @@ export default new Router({
                     meta: { title: 'monitor' }
                 },
                 {
-                    path: '/form',
-                    component: resolve => require(['../components/page/BaseForm.vue'], resolve),
-                    meta: { title: '基本表单' }
-                },
-                {
-                    // 富文本编辑器组件
-                    path: '/editor',
-                    component: resolve => require(['../components/page/VueEditor.vue'], resolve),
-                    meta: { title: '富文本编辑器' }
-                },
-                {
                     // markdown组件
                     path: '/markdown',
                     component: resolve => require(['../components/page/Create.vue'], resolve),
@@ -65,7 +50,24 @@ export default new Router({
                     // 编辑博文
                     path: '/edit/:id',
                     component: resolve => require(['../components/page/Edit.vue'], resolve),
-                    meta: { title: '创作博文' }
+                    meta: { title: '编辑博文' }
+                },
+                /*
+                {
+                    path: '/icon',
+                    component: resolve => require(['../components/page/Icon.vue'], resolve),
+                    meta: { title: '自定义图标' }
+                },
+                {
+                    path: '/form',
+                    component: resolve => require(['../components/page/BaseForm.vue'], resolve),
+                    meta: { title: '基本表单' }
+                },
+                {
+                    // 富文本编辑器组件
+                    path: '/editor',
+                    component: resolve => require(['../components/page/VueEditor.vue'], resolve),
+                    meta: { title: '富文本编辑器' }
                 },
                 {
                     // 图片上传组件
@@ -100,7 +102,7 @@ export default new Router({
                     path: '/403',
                     component: resolve => require(['../components/page/403.vue'], resolve),
                     meta: { title: '403' }
-                }
+                }*/
             ]
         },
         {

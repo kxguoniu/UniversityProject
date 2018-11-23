@@ -13,6 +13,7 @@ class ConnPool:
             try:
                 conn = pymysql.connect(host=self.host, port=self.port, user=self.user, passwd=self.passwd, db=self.db, charset=self.charset)
                 conn.autocommit(True)
+                print('pymysql',i,conn)
                 self.pool.put(conn)
             except Exception as e:
                 raise IOError(e)
@@ -55,6 +56,7 @@ class ConnPool:
             print(e)
             cursor.close()
             self.pool.put(conn)
+            raise Exception(e)
             return None,None
         else:
             result = cursor.fetchall()
@@ -63,23 +65,22 @@ class ConnPool:
             return response,result
 
     def check(self):
+        number = 0
         for i in range(self.maxconn):
             try:
                 conn = self.pool.get()
-                if conn.ping():
-                    self.pool.put(conn)
-                else:
-                    conn = pymysql.connect(host=self.host, port=self.port, user=self.user, passwd=self.passwd, db=self.db, charset=self.charset)
-                    conn.autocommit(True)
-                    self.pool.put(conn)
+                conn.ping()
+                number += 1
+                self.pool.put(conn)
             except Exception as e:
                 print(e)
-                return None
-            else:
-                return True
+                return None,number
+        return True,number
 
     def close(self):
         for i in range(self.maxconn):
-            self.pool.get().close()
-
+            conn = self.pool.get()
+            if conn:
+                conn.close()
+                print('结束sql',i)
 sqlconn = ConnPool.get_instance(host='123.206.95.123', port=3306, user='root', passwd='Nkx.29083X', db='blog', charset='utf8', maxconn=10)

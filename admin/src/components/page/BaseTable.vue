@@ -8,8 +8,16 @@
         <div class="container">
             <div class="handle-box">
                 <el-button type="primary" icon="delete" class="handle-del mr10" @click="delAll">批量删除</el-button>
+                <el-select v-model="select" clearable placeholder="请选择" class="handle-select mr10">
+                    <el-option
+                        v-for="item in options"
+                        :key="item.name"
+                        :label="item.name"
+                        :value="item.value">
+                    </el-option>
+                </el-select>
                 <el-input v-model="select_word" placeholder="筛选关键词" class="handle-input mr10"></el-input>
-                <el-button type="primary" icon="search" @click="search">搜索</el-button>
+                <el-button type="primary" icon="search" @click="getList">搜索</el-button>
             </div>
             <el-table :data="blogList" border class="table" ref="multipleTable" @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
@@ -115,6 +123,15 @@
         data() {
             return {
                 blogList:[],     //博文列表
+                options: [
+                    {name:'作者', value:'author'},
+                    {name:'分类', value:'category'},
+                    {name:'流量', value:'views'},
+                    {name:'权重', value:'weight'},
+                    {name:'标题', value:'title'},
+                    {name:'摘要', value:'digested'},
+                    {name:'日期', value:'time'},
+                ],
                 total: 0,   //总数量
                 listQuery:{
                     page: 1,
@@ -127,7 +144,6 @@
                 tableData: [],
                 cur_page: 1,
                 select_cate: '',
-                select_word: '',
                 del_list: [],       // 多选删除列表
                 is_search: false,
                 editVisible: false, // 编辑弹出框控制
@@ -138,7 +154,9 @@
                     category: '',
                     id: -1,
                 },
-                idx: -1             // 当前显示的第几行数据
+                idx: -1,             // 当前显示的第几行数据
+                select: '',          // 筛选条件
+                select_word: '',    // 筛选关键词
             }
         },
         created() {
@@ -167,11 +185,17 @@
                         page: this.listQuery.page,
                         limit: this.listQuery.limit,
                         total: this.total,
+                        select: this.select,
+                        value: this.select_word,
                     }
                 })
                 .then(res => {
-                    this.blogList = res.data.data;
-                    this.total = res.data.total;
+                    if (res.data.status == 0) {
+                        this.blogList = res.data.data;
+                        this.total = res.data.total;
+                    } else {
+                        this.$message.error(res.data.msg)
+                    }
                 })
                 .catch(error =>{
                     console.log(error);
@@ -187,9 +211,6 @@
             handleCurrentChange(val) {
                 this.listQuery.page = val;
                 this.getList() // 改变数据
-            },
-            search() {
-                this.is_search = true;
             },
             formatter(row, column) {
                 return row.address;
@@ -315,11 +336,10 @@
         margin-bottom: 20px;
     }
     .handle-select {
-        width: 120px;
+        width: 100px;
     }
-
     .handle-input {
-        width: 300px;
+        width: 200px;
         display: inline-block;
     }
     .del-dialog-cnt{

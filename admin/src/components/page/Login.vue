@@ -16,7 +16,6 @@
                 <div class="login-btn">
                     <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
                 </div>
-                <p class="login-tips">Tips : 用户名和密码随便填。</p>
             </el-form>
         </div>
     </div>
@@ -41,16 +40,26 @@
             }
         },
         methods: {
-            submitForm(formName) {
-                this.$refs[formName].validate((valid) => {
-                    if (valid) {
-                        localStorage.setItem('ms_username',this.ruleForm.username);
-                        this.$router.push('/');
-                    } else {
-                        console.log('error submit!!');
-                        return false;
-                    }
-                });
+            submitForm(formName){
+                if (this.ruleForm.username != '' && this.ruleForm.password != '') {
+                    var url = this.HOST + 'login'
+                    this.$axios({
+                        method: 'post',
+                        url: url,
+                        data: this.ruleForm,
+                    })
+                    .then(res => {
+                        if (res.data.status == 0) {
+                            localStorage.setItem('nkx_username', this.ruleForm.username)
+                            this.$router.push('/dashboard')
+                        } else {
+                            console.log(res.data.msg)
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+                }
             }
         }
     }

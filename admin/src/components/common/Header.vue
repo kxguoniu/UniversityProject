@@ -16,7 +16,7 @@
                 <!-- 消息中心 -->
                 <div class="btn-bell">
                     <el-tooltip effect="dark" :content="message?`有${message}条未读消息`:`消息中心`" placement="bottom">
-                        <router-link to="/tabs">
+                        <router-link to="/message">
                             <i class="el-icon-bell"></i>
                         </router-link>
                     </el-tooltip>
@@ -50,13 +50,13 @@
             return {
                 collapse: false,
                 fullscreen: false,
-                name: 'linxin',
+                name: 'niukaixin',
                 message: 2
             }
         },
         computed:{
             username(){
-                let username = localStorage.getItem('ms_username');
+                let username = localStorage.getItem('nkx_username');
                 return username ? username : this.name;
             }
         },
@@ -64,7 +64,21 @@
             // 用户名下拉菜单选择事件
             handleCommand(command) {
                 if(command == 'loginout'){
-                    localStorage.removeItem('ms_username')
+                    var url = this.HOST + 'logout'
+                    this.$axios({
+                        method: 'get',
+                        url: url
+                    })
+                    .then(res => {
+                        if (res.data.status == 0) {
+                            this.$message.success(res.data.msg)
+                        } else {
+                            this.$message.error(res.data.msg)
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
                     this.$router.push('/login');
                 }
             },

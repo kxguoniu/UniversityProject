@@ -1,35 +1,43 @@
+# -*- coding: utf-8 -*-
 import tornado.web
 import tornado.ioloop
 import tornado.options
+import tornado.log
 from tornado.options import define, options
 from mysqlpool import sqlconn
+import pymysql
+import logging
 import uuid
 import threading
 import markdown
-import pymysql
 import json
 import os
 
+ROOT = 'nkx'
+
 define("port", default=8888, help="run on the given port", type=int)
-DB = pymysql.Connection(host='123.206.95.123', database='blog', user='root', password='Nkx.29083X', charset='utf8')
-DB.autocommit(True)
-
 LOCKFILE = os.path.dirname(os.path.abspath(__file__)) + "/system.lock"
-
 dict_session = {}
 
+
+class LogFormatter(tornado.log.LogFormatter):
+    '''
+    定义日志
+    '''
+    def __init__(self):
+        super(LogFormatter, self).__init__(
+            fmt='%(color)s[%(asctime)s %(filename)s:%(funcName)s:%(lineno)d %(levelname)s]%(end_color)s %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
+
+
 class BaseHandler(tornado.web.RequestHandler):
-    #def get_current_user(self):
-        #session_id = self.get_secure_cookie("session_id")
-        #return dict_session.get(session_id.decode())
-    def asd(self):
-        self.a = 1
+    def get_current_user(self):
+        session_id = self.get_secure_cookie("session_id")
+        return dict_session.get(session_id.decode())
 
 
 class BlogHandler(BaseHandler):
-    def initialize(self):
-        self.db = DB
-
 
     def get(self):
         flag = self.get_argument("flag",'')
@@ -43,54 +51,124 @@ class BlogHandler(BaseHandler):
 
 
 class LoginHandler(BaseHandler):
-    def initialize(self):
-        self.db = DB
-
-
+    '''
+    登录
+    '''
     def get(self):
         self.render("login.html")
 
-
     def post(self):
-        user = self.get_argument("user")
-        pwd = self.get_argument("pwd")
+        '''
+        登录
+        :user   用户名
+        :pwd    密码
+        '''
+        body = json.loads(self.request.body)
+        user = body['username']
+        pwd = body['password']
 
-        sql = "select user from user where user=%s and pwd=%s"
-        number,results = sqlconn.exec_sql_feach(sql,(user,pwd))
-        if not number:
-            self.redirect("/login")
-        
         session_id = str(uuid.uuid1())
         dict_session[session_id] = user
         self.set_secure_cookie("session_id", session_id)
-        self.redirect("/")
+        re_data = {'status':0, 'msg':'登录成功'}
+        self.write(re_data)
+
+
+class LogoutHandler(BaseHandler):
+    '''
+    登出
+    '''
+    @tornado.web.authenticated
+    def get(self):
+        del dict_session[self.get_secure_cookie('session_id').decode()]
+        self.write({'status':0, 'msg':'退出成功'})
 
 
 class MainHandler(BaseHandler):
-    #@tornado.web.authenticated
+    @tornado.web.authenticated
     def get(self):
         self.render("index.html")
 
 
 class CateGoryHandler(BaseHandler):
-    def initialize(self):
-        self.db = DB
-
+    '''
+    分类博文列表
+    '''
+    #@tornado.web.authenticated
     def get(self):
+        '''
+        :flag   分类
+        :page   页数
+        :size   页面大小
+        :total  博文总数量
+        :select 筛选条件
+        :value  筛选内容
+        '''
         flag = self.get_argument("flag", '')
         page = self.get_argument("page", 1)
         size = self.get_argument("limit", 20)
         total = self.get_argument("total", 0)
+        select = self.get_argument("select", '')
+        value = self.get_argument("value", '')
 
         sql = "select blog.id,blog.title,blog.weight,author.name as author,category.name as category,blog.create_time,blog.change_time,blog.views,blog.digested from blog left join category on blog.category_id = category.id left join author on blog.author_id = author.id "
         pagesize = (int(page)-1)*int(size)
         size = int(size)
+        if not select:
+            print('不搜索')
+            totalnum = sqlconn.exec_sql(sql)
+            if flag != '1':
+                sql += "where category.id=%s limit %s,%s"
+                number,results = sqlconn.exec_sql_feach(sql,(flag,pagesize,size))
+            elif flag == '1':
+                sql += "limit %s,%s"
+                number,results = sqlconn.exec_sql_feach(sql,(pagesize,size))
+
+            if results:
+                for i in results:
+                    i['create_time'] = str(i['create_time'])
+                    i['change_time'] = str(i['change_time'])
+                re_data = {'status': 0, 'msg':'' , 'data':results}
+            else:
+                re_data = {'status': 1, 'msg':'查无此人' , 'data':''}
+
+            re_data['total'] = totalnum if totalnum else 0
+            return self.write(re_data)
+        elif select in ['author', 'category', 'title', 'digested']:
+            print('文字搜索')
+            if select in ['author', 'category']:
+                sql += "where %s.name like '%s' "
+            else:
+                sql += "where %s like '%s' "
+            value = '%' + value + '%'
+        elif select in ['views', 'weight']:
+            print('数字搜索')
+            if value[0] == '@':
+                value = value[1:]
+                sql += "where %s<%s "
+            elif value[-1] == '$':
+                value = value[:-1]
+                sql += "where %s>%s "
+            else:
+                sql += "where %s=%s "
+
+            try:
+                value = int(value)
+            except:
+                return self.write({'status':1, 'msg':'输入值不合法'})
+
         if flag != '1':
-            sql += "where category.id=%s limit %s,%s"
-            number,results = sqlconn.exec_sql_feach(sql,(flag,pagesize,size))
+            sql += "and category.id=%s limit %s,%s"
+            totalsql = sql + "and category.id=%s"
+            totalnum = sqlconn.exec_sql(totalsql,(select,value,flag))
+            number,results = sqlconn.exec_sql_feach(sql,(select,value,flag,pagesize,size))
         elif flag == '1':
             sql += "limit %s,%s"
-            number,results = sqlconn.exec_sql_feach(sql,(pagesize,size))
+            resql = sql%(select,value,pagesize,size)
+            print(resql)
+            totalnum = sqlconn.exec_sql(resql)
+            number,results = sqlconn.exec_sql_feach(resql)
+
         if results:
             for i in results:
                 i['create_time'] = str(i['create_time'])
@@ -99,16 +177,21 @@ class CateGoryHandler(BaseHandler):
         else:
             re_data = {'status': 1, 'msg':'查无此人' , 'data':''}
 
-        total = int(total)
-        if total == 0:
-            totalsql = "select count(id) as id from blog"
-            number,results = sqlconn.exec_sql_feach(totalsql)
-            re_data['total'] = results[0]['id']
-        else:
-            re_data['total'] = total
+        re_data['total'] = totalnum if totalnum else 0
         self.write(re_data)
 
+    @tornado.web.authenticated
     def post(self):
+        '''
+        博文修改
+        :title  标题
+        :category 标签
+        :weight   权重
+        :blogid   博文id
+        '''
+        user = self.current_user
+        if user != 'nkx':
+            return self.write({'status':1, 'msg':'WARRING!  权限不足'})
         body = json.loads(self.request.body)
         title = body['title']
         category = body['category']
@@ -129,7 +212,15 @@ class CateGoryHandler(BaseHandler):
             re_data = {'status':1, 'msg':'分类不存在'}
         self.write(re_data)
 
+    @tornado.web.authenticated
     def delete(self):
+        '''
+        博文删除
+        :blogid  博文id/单点删除
+        :listid  博文id列表/批量删除
+        '''
+        if self.current_user != 'nkx':
+            return self.write({'status':1, 'msg':'WARRING!  权限不足'})
         blogid = self.get_argument('id',-1)
         listid = self.get_argument('id', {})
         if blogid != -1 and type(blogid) == int:
@@ -155,9 +246,6 @@ class CateGoryHandler(BaseHandler):
 
 class TagBlogHandler(BaseHandler):
     #返回标签对应的博文
-    def initialize(self):
-        self.db = DB
-
 
     def get(self):
         tag = self.get_argument("tag",'')
@@ -183,9 +271,7 @@ class TagBlogHandler(BaseHandler):
 
 class TagListHandler(BaseHandler):
     #返回标签列表
-    def initialize(self):
-        self.db = DB
-
+    @tornado.web.authenticated
     def get(self):
         tagsql = "select tag.name from tag"
 
@@ -207,8 +293,6 @@ class TagListHandler(BaseHandler):
 
 
 class DetailHandler(BaseHandler):
-    def initialize(self):
-        self.db = DB
 
     def get(self):
         Id = self.get_argument("id",'')
@@ -243,8 +327,6 @@ class DetailHandler(BaseHandler):
 
 
 class BlogSaveHandler(BaseHandler):
-    def initialize(self):
-        self.db = DB
 
     def post(self):
         body = self.request.body
@@ -282,8 +364,6 @@ class BlogSaveHandler(BaseHandler):
 
 
 class NewBlogHandler(BaseHandler):
-    def initialize(self):
-        self.db = DB
 
     def get(self):
         sql = "select blog.id,blog.title,author.name as author,category.name as category,blog.create_time,blog.change_time,blog.views,blog.digested "
@@ -305,15 +385,6 @@ class NewBlogHandler(BaseHandler):
 
 
 class SystemHandler(BaseHandler):
-    def initialize(self):
-        self.db = DB
-        self.list = ['min1','min5','min15','uscpu','sycpu','total','used','free','netin','netout', 'create_time']
-
-    def numbers(self, val):
-        return -val
-
-    def timesplit(self, val):
-        return val[11:16]
 
     def get(self):
         """
@@ -321,25 +392,6 @@ class SystemHandler(BaseHandler):
         systemsql += "GROUP_CONCAT(uscpu) as uscpu, GROUP_CONCAT(sycpu) as sycpu, GROUP_CONCAT(total) as total, GROUP_CONCAT(used) as used, "
         systemsql += "GROUP_CONCAT(free) as free, GROUP_CONCAT(netin) as netin, GROUP_CONCAT(netout) as netout, GROUP_CONCAT(create_time) as create_time "
         systemsql += "from skynet order by skynet.create_time DESC limit 60"
-        cursor = self.db.cursor(cursor=pymysql.cursors.DictCursor)
-        number = cursor.execute(systemsql)
-        results = cursor.fetchall()
-        r_data = {}
-        lists = []
-        for key,i in enumerate(self.list):
-            if key < 5:
-                lists.append(list(map(float,results[0][i].decode().split(','))))
-            elif key < 10:
-                lists.append(list(map(int,results[0][i].decode().split(','))))
-            else:
-                lists.append(results[0][i].decode().split(','))
-        r_data['load'] = {'min1':lists[0], 'min5':lists[1], 'min15':lists[2]}
-        r_data['cpu'] = {'uscpu':lists[3], 'sycpu':lists[4]}
-        r_data['memory'] = {'total':lists[5], 'used':lists[6], 'free':lists[7]}
-        r_data['net'] = {'netin':lists[8], 'netout':list(map(self.numbers,lists[9]))}
-        r_data['create_time'] = list(map(self.timesplit, lists[10]))
-        re_data = {'status':0, 'msg':'', 'data':r_data}
-        self.write(re_data)
         """
         sort = self.get_argument('sort', 'true')
         limits = self.get_argument('limit', 60)
@@ -366,6 +418,40 @@ class SystemHandler(BaseHandler):
         self.write(re_data)
 
 
+class MessageHandler(BaseHandler):
+    '''
+    系统通知
+    '''
+    def get(self):
+        limit = self.get_argument('limit', '')
+        page = self.get_argument('page', '')
+        total = self.get_argument('total', '')
+
+        msgsql = "select id,content,status,create_time from message"
+        number,results = sqlconn.exec_sql_feach(msgsql)
+
+        if results:
+            for i in results:
+                i['create_time'] = str(i['create_time'])
+            re_data = {'status': 0, 'msg':'' , 'data':results}
+        else:
+            re_data = {'status': 0, 'msg':'无数据' , 'data':[]}
+
+        self.write(re_data)
+
+    def post(self):
+        msgid = self.get_argument('msgid','')
+        status = self.get_argument('status', '')
+
+        msgsql = "update message set status=%s where id=%s"
+        number = sqlconn.exec_sql(msgsql,(status,msgid))
+        if number:
+            re_data = {'status':0, 'msg':'操作成功'}
+        else:
+            re_data = {'status':1, 'msg':'操作失败'}
+        self.write(re_data)
+
+
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
@@ -377,8 +463,10 @@ class Application(tornado.web.Application):
             (r'/taglist', TagListHandler),      #标签/分类 列表
             (r'/detail', DetailHandler),        #博文详情
             (r'/login', LoginHandler),          #登录
+            (r'/logout', LogoutHandler),        #登出
             (r'/blog', BlogHandler),            #无
             (r'/system', SystemHandler),        #系统监控
+            (r'/message', MessageHandler),      #系统通知
         ]
         settings = dict(
             debug=True,     #调试模式
@@ -392,12 +480,16 @@ def main():
     try:
         tornado.options.parse_command_line()  #解析命令行参数
         app = Application()
+        # 监控开启
         #LockFile(True)
-        #t = threading.Thread(target=skynet, args=(LOCKFILE,))
-        #t.start()
+        #st = threading.Thread(target=skynet, args=(LOCKFILE,))
+        #st.start()
+        
+        # mysqlconn check
+        tt = threading.Thread(target=LoopConn, args=(sqlconn,))
+        tt.start()
         #app.listen(options.port)
-        t = threading.Thread(target=LoopConn, args=(sqlconn,))
-        t.start()
+        [i.setFormatter(LogFormatter()) for i in logging.getLogger().handlers]
         app.listen(80)
         tornado.ioloop.IOLoop.current().start()
     except Exception as e:
@@ -405,8 +497,9 @@ def main():
     finally:
         LockFile(False)
         print('清理结束')
-        stop_thread(t)
-
+        #stop_thread(st)
+        stop_thread(tt)
+        sqlconn.close()
 
 
 def _async_raise(tid, exctype):
@@ -420,7 +513,7 @@ def _async_raise(tid, exctype):
     if res == 0:
         raise ValueError("invalid thread id")
     if res == 1:
-        print('cheonggong')
+        print('清理线程OK')
     elif res != 1:
         # """if it returns a number greater than one, you're in trouble,
         # and you should call it again with exc=NULL to revert the effect"""
@@ -433,12 +526,12 @@ def stop_thread(thread):
 def LoopConn(val):
     import time
     while True:
-        result = val.check()
+        result,number = val.check()
         if result:
-            print('检测成功')
+            print('检测成功',number)
         else:
-            print('检测失败')
-        time.sleep(60)
+            print('检测失败',number)
+        time.sleep(600)
 
 def LockFile(val, lockpath=LOCKFILE):
     if val and not os.path.isfile(lockpath):
@@ -465,9 +558,9 @@ def skynet(lockpath):
             try:
                 loads = os.popen('uptime').read()
                 loads = loads.split()
-                min1 = float(loads[-3])
-                min5 = float(loads[-2])
-                min15 = float(loads[-1])
+                min1 = float(loads[-3].split(',')[0])
+                min5 = float(loads[-2].split(',')[0])
+                min15 = float(loads[-1].split(',')[0])
             except:
                 min1 = min5 = min15 = 0
             finally:
@@ -519,6 +612,7 @@ def skynet(lockpath):
         else:
             print('关闭')
             status = False
+    print('监控结束')
 
 if __name__ == "__main__":
     main()

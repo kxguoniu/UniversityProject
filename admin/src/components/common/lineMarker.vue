@@ -60,7 +60,7 @@ export default {
                     var dataZoom = this.option.dataZoom
 
                     // 获取的option
-                    this.option = self.chart1.getOption()
+                    this.option = this.chart1.getOption()
                     //console.log(this.option.dataZoom[0].start,this.option.dataZoom[0].end,this.option.dataZoom[0].height,this.option.dataZoom[0].bottom)
                     //console.log(this.option.dataZoom[1].start,this.option.dataZoom[1].end,this.option.dataZoom[1].height)
                     dataZoom[0].start = this.option.dataZoom[0].start

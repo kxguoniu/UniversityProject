@@ -2,22 +2,22 @@
     <div class="">
         <div class="crumbs">
             <el-breadcrumb separator="/">
-                <el-breadcrumb-item><i class="el-icon-lx-copy"></i> tab选项卡</el-breadcrumb-item>
+                <el-breadcrumb-item><i class="el-icon-lx-copy"></i> 系统消息</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="container">
             <el-tabs v-model="message">
-                <el-tab-pane :label="`未读消息(${unread.length})`" name="first">
-                    <el-table :data="unread" :show-header="false" style="width: 100%">
+                <el-tab-pane :label="`未读消息(${datatwo(0).length})`" name="first">
+                    <el-table :data="datatwo(0)" :show-header="false" style="width: 100%">
                         <el-table-column>
                             <template slot-scope="scope">
-                                <span class="message-title">{{scope.row.title}}</span>
+                                <span class="message-title">{{scope.row.content}}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="date" width="180"></el-table-column>
+                        <el-table-column prop="create_time" width="180"></el-table-column>
                         <el-table-column width="120">
                             <template slot-scope="scope">
-                                <el-button size="small" @click="handleRead(scope.$index)">标为已读</el-button>
+                                <el-button size="small" @click="handleRead(scope.row)">标为已读</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -25,18 +25,18 @@
                         <el-button type="primary">全部标为已读</el-button>
                     </div>
                 </el-tab-pane>
-                <el-tab-pane :label="`已读消息(${read.length})`" name="second">
+                <el-tab-pane :label="`已读消息(${datatwo(1).length})`" name="second">
                     <template v-if="message === 'second'">
-                        <el-table :data="read" :show-header="false" style="width: 100%">
+                        <el-table :data="datatwo(1)" :show-header="false" style="width: 100%">
                             <el-table-column>
                                 <template slot-scope="scope">
-                                    <span class="message-title">{{scope.row.title}}</span>
+                                    <span class="message-title">{{scope.row.content}}</span>
                                 </template>
                             </el-table-column>
-                            <el-table-column prop="date" width="150"></el-table-column>
+                            <el-table-column prop="create_time" width="150"></el-table-column>
                             <el-table-column width="120">
                                 <template slot-scope="scope">
-                                    <el-button type="danger" @click="handleDel(scope.$index)">删除</el-button>
+                                    <el-button type="danger" @click="handleDel(scope.row)">删除</el-button>
                                 </template>
                             </el-table-column>
                         </el-table>
@@ -45,18 +45,18 @@
                         </div>
                     </template>
                 </el-tab-pane>
-                <el-tab-pane :label="`回收站(${recycle.length})`" name="third">
+                <el-tab-pane :label="`回收站(${datatwo(2).length})`" name="third">
                     <template v-if="message === 'third'">
-                        <el-table :data="recycle" :show-header="false" style="width: 100%">
+                        <el-table :data="datatwo(2)" :show-header="false" style="width: 100%">
                             <el-table-column>
                                 <template slot-scope="scope">
-                                    <span class="message-title">{{scope.row.title}}</span>
+                                    <span class="message-title">{{scope.row.content}}</span>
                                 </template>
                             </el-table-column>
-                            <el-table-column prop="date" width="150"></el-table-column>
+                            <el-table-column prop="create_time" width="150"></el-table-column>
                             <el-table-column width="120">
                                 <template slot-scope="scope">
-                                    <el-button @click="handleRestore(scope.$index)">还原</el-button>
+                                    <el-button @click="handleRestore(scope.row)">还原</el-button>
                                 </template>
                             </el-table-column>
                         </el-table>
@@ -75,38 +75,111 @@
         name: 'tabs',
         data() {
             return {
-                message: 'first',
+                message: 'first',       // 点击改变选项卡
                 showHeader: false,
-                unread: [{
-                    date: '2018-04-19 20:00:00',
-                    title: '【系统通知】该系统将于今晚凌晨2点到5点进行升级维护',
-                },{
-                    date: '2018-04-19 21:00:00',
-                    title: '今晚12点整发大红包，先到先得',
-                }],
-                read: [{
-                    date: '2018-04-19 20:00:00',
-                    title: '【系统通知】该系统将于今晚凌晨2点到5点进行升级维护'
-                }],
-                recycle: [{
-                    date: '2018-04-19 20:00:00',
-                    title: '【系统通知】该系统将于今晚凌晨2点到5点进行升级维护'
-                }]
+                msglist: [],            // 信息列表
+                lists: [
+                    {
+                        id: 1,
+                        create_time: '2018-04-19 20:10:00',
+                        content: '【系统通知】该系统将于今晚凌晨2点到5点进行升级维护',
+                        status: 0,
+                    },
+                    {
+                        id: 2,
+                        date: '2018-04-19 21:20:00',
+                        title: '今晚12点整发大红包，先到先得',
+                        status: 1
+                    },
+                    {
+                        id: 3,
+                        date: '2018-04-19 20:30:00',
+                        title: '【系统通知】该系统将于今晚5点进行升级维护',
+                        status: 2
+                    },
+                    {
+                        id: 4,
+                        date: '2018-04-19 20:40:00',
+                        title: '【系统通知】该系统将于今晚凌晨2点到5点进行升级维护',
+                        status:0
+                    }
+                ]
             }
         },
+        created(){
+            this.init()
+        },
         methods: {
-            handleRead(index) {
-                const item = this.unread.splice(index, 1);
-                console.log(item);
-                this.read = item.concat(this.read);
+            init(){
+                var url = this.HOST + 'message'
+                this.$axios({
+                    method: 'get',
+                    url: url,
+                })
+                .then(res => {
+                    if (res.data.status == 0) {
+                        this.lists = res.data.data
+                    } else {
+                        this.$message.error(res.data.msg)
+                    }
+                    console.log(this.msglist)
+                })
+                .catch(error => {
+                    console.log(error)
+                })
             },
-            handleDel(index) {
-                const item = this.read.splice(index, 1);
-                this.recycle = item.concat(this.recycle);
+            submit(msgid,status){
+                var url = this.HOST + 'message'
+                this.$axios({
+                    method: 'post',
+                    url: url,
+                    params: {
+                        msgid: msgid,
+                        status: status
+                    }
+                })
+                .then(res => {
+                    if (res.data.status == 0) {
+                        this.$message.sucess('操作成功')
+                        this.msglist = res.data.data
+                    } else {
+                        this.$message.error(res.data.msg)
+                    }
+                })
+                .catch(error => {
+                    console.log(error)
+                })
             },
-            handleRestore(index) {
-                const item = this.recycle.splice(index, 1);
-                this.read = item.concat(this.read);
+            datatwo(val){
+                return this.lists.filter((d) => {
+                    if (d.status == val) {
+                        return d
+                    }
+                })
+            },
+            handleRead(val) {
+                for (let i = 0; i < this.lists.length; i++) {
+                    if (val.id == this.lists[i].id) {
+                        this.lists[i].status = 1
+                    }
+                }
+                this.submit(val.id,1)
+            },
+            handleDel(val) {
+                for (let i = 0; i < this.lists.length; i++) {
+                    if (val.id == this.lists[i].id) {
+                        this.lists[i].status = 2
+                    }
+                }
+                this.submit(val.id,2)
+            },
+            handleRestore(val) {
+                for (let i = 0; i < this.lists.length; i++) {
+                    if (val.id == this.lists[i].id) {
+                        this.lists[i].status = 1
+                    }
+                }
+                this.submit(val.id,1)
             }
         },
         computed: {
