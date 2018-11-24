@@ -83,4 +83,5 @@ class ConnPool:
             if conn:
                 conn.close()
                 print('结束sql',i)
+
 sqlconn = ConnPool.get_instance(host='123.206.95.123', port=3306, user='root', passwd='Nkx.29083X', db='blog', charset='utf8', maxconn=10)

@@ -18,7 +18,6 @@
             }
         },
         created(){
-            //var url = "/static/tag.json";
             var url = this.HOST + "taglist";
             this.$axios.get(url)
             .then(res => {

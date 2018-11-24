@@ -5,15 +5,13 @@ import tornado.options
 import tornado.log
 from tornado.options import define, options
 from mysqlpool import sqlconn
-import pymysql
+from monitor import monitor
 import logging
 import uuid
 import threading
 import markdown
 import json
 import os
-
-ROOT = 'nkx'
 
 define("port", default=8888, help="run on the given port", type=int)
 LOCKFILE = os.path.dirname(os.path.abspath(__file__)) + "/system.lock"
@@ -476,32 +474,6 @@ class Application(tornado.web.Application):
         super(Application, self).__init__(handlers, **settings)
 
 
-def main():
-    try:
-        tornado.options.parse_command_line()  #解析命令行参数
-        app = Application()
-        # 监控开启
-        #LockFile(True)
-        #st = threading.Thread(target=skynet, args=(LOCKFILE,))
-        #st.start()
-        
-        # mysqlconn check
-        tt = threading.Thread(target=LoopConn, args=(sqlconn,))
-        tt.start()
-        #app.listen(options.port)
-        [i.setFormatter(LogFormatter()) for i in logging.getLogger().handlers]
-        app.listen(80)
-        tornado.ioloop.IOLoop.current().start()
-    except Exception as e:
-        print(e)
-    finally:
-        LockFile(False)
-        print('清理结束')
-        #stop_thread(st)
-        stop_thread(tt)
-        sqlconn.close()
-
-
 def _async_raise(tid, exctype):
     import ctypes
     import inspect
@@ -533,86 +505,32 @@ def LoopConn(val):
             print('检测失败',number)
         time.sleep(600)
 
-def LockFile(val, lockpath=LOCKFILE):
-    if val and not os.path.isfile(lockpath):
-        #os.mknod(lockpath)
-        with open(lockpath, 'w') as f:
-            f.close()
-    elif not val and os.path.isfile(lockpath):
-        os.remove(lockpath)
 
+def main():
+    try:
+        tornado.options.parse_command_line()  #解析命令行参数
+        app = Application()
+        # 监控开启
+        #monitor.LockFile(True,LOCKFILE)
+        #st = threading.Thread(target=skynet, args=(LOCKFILE,))
+        #st.start()
+        
+        # mysqlconn check
+        tt = threading.Thread(target=LoopConn, args=(sqlconn,))
+        tt.start()
+        #app.listen(options.port)
+        [i.setFormatter(LogFormatter()) for i in logging.getLogger().handlers]
+        app.listen(80)
+        tornado.ioloop.IOLoop.current().start()
+    except Exception as e:
+        print(e)
+    finally:
+        LockFile(False)
+        print('清理结束')
+        #stop_thread(st)
+        stop_thread(tt)
+        sqlconn.close()
 
-def skynet(lockpath):
-    print(lockpath)
-    status = True
-    netstatus = False
-    lastin = 0
-    lastout = 0
-    db = pymysql.Connection(host='123.206.95.123', database='blog', user='root', password='Nkx.29083X', charset='utf8')
-    sql = """insert into skynet (min1,min5,min15,uscpu,sycpu,total,used,free,netin,netout,create_time) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
-    cursor = db.cursor(cursor=pymysql.cursors.DictCursor)
-    import time
-    import datetime
-    while status:
-        if os.path.isfile(lockpath):
-            try:
-                loads = os.popen('uptime').read()
-                loads = loads.split()
-                min1 = float(loads[-3].split(',')[0])
-                min5 = float(loads[-2].split(',')[0])
-                min15 = float(loads[-1].split(',')[0])
-            except:
-                min1 = min5 = min15 = 0
-            finally:
-                if min15 > 1:
-                    print('WARING!!!')
-
-            try:
-                cpus = os.popen("top -b -n 1 |grep Cpu").read()
-                cpus = cpus.split()
-                uscpu = float(cpus[1].split('%')[0])
-                sycpu = float(cpus[2].split('%')[0])
-            except:
-                uscpu = sycpu = 0
-            finally:
-                if uscpu + sycpu > 90:
-                    print('WARING!!!')
-
-            try:
-                memory = os.popen("free -m | grep Mem").read()
-                memory = memory.split()
-                total = int(memory[1])
-                used = int(memory[2])
-                free = int(memory[3])
-            except:
-                total = 1
-                used = free = 0
-            finally:
-                if used / total > 0.9:
-                    print('WARING!!!')
-
-            try:
-                net = os.popen("cat /proc/net/dev | grep eth").read()
-                net = net.split()
-                if netstatus:
-                    netin = int(net[2]) - lastin
-                    netout = int(net[10]) - lastout
-                else:
-                    netin = netout = 0
-                    netstatus = True
-                lastin = int(net[2])
-                lastout = int(net[10])
-            except:
-                netin = netout = 0
-
-            create_time = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-            number = cursor.execute(sql,(min1,min5,min15,uscpu,sycpu,total,used,free,netin,netout,create_time))
-            print('开启')
-            time.sleep(60)
-        else:
-            print('关闭')
-            status = False
-    print('监控结束')
 
 if __name__ == "__main__":
     main()

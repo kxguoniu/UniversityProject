@@ -89,18 +89,13 @@
                         var blog = res.data.data;
                         var result = blog.body.match(/(<div class="toc">(?:.|\n)*<\/ul>\n<\/div>)/);
                         if (result != null){
-<<<<<<< HEAD
-                            result = result[0]
-=======
                             result = result[0];
                             this.bus.$emit('toc', result,true);
                         } else{
                             this.bus.$emit('toc', '', false);
->>>>>>> 8aca13b5a498a108c0c63dc124cebbfe541abb0c
                         }
                         blog.body = blog.body.replace(/(<div class="toc">(?:.|\n)*<\/ul>\n<\/div>)/, "");
                         this.blogdetail = blog;
-                        this.bus.$emit('add', false);
                     }
                 })
                 .catch(error => {
@@ -171,6 +166,7 @@
         padding-bottom: 20px;
     }
     .blog-link a{
+        cursor: pointer;
         text-decoration:none;
     }
     .entry-content {

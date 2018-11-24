@@ -1,11 +1,10 @@
 <template lang="html">
     <div class="body-right">
-        <Login v-if="status1"></Login>
-        <Search v-if="status2"></Search>
+        <Search></Search>
         <BlogToc></BlogToc>
-        <NewBlog v-if="status2"></NewBlog>
-        <TimeGroup v-if="status2"></TimeGroup>
-        <BlogTag v-if="status2"></BlogTag>
+        <NewBlog></NewBlog>
+        <TimeGroup></TimeGroup>
+        <BlogTag></BlogTag>
     </div>
 </template>
 
@@ -29,13 +28,11 @@
         mounted(){
             var _this = this
             this.bus.$on('add', function(val){
-                _this.status1 = val;
+                //_this.status1 = val;
             })
         },
         data(){
             return{
-                status1:true,
-                status2:true,
             }
         }
     }

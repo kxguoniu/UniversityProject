@@ -1,12 +1,17 @@
 <template>
     <div>
-        <div class="html-header">
-            <ul>
-                <li :key="index" v-for="(item,index) in headers">
-                    <router-link tag="a" :to="{name:'BlogPage', params:{id:item.id}}" >{{ item['name'] }}</router-link>
-                </li>
-            </ul>
-        </div>
+        <el-menu
+            :default-active="'/categroay/1'"
+            class="html-header"
+            mode="horizontal"
+            @select="handleSelect"
+            background-color="#0b445b"
+            text-color="#fff"
+            active-text-color="#ffd04b"
+            router
+            >
+            <el-menu-item :index="'/categroay/' + item.id" :key="index" v-for="(item,index) in headers">{{ item.name }}</el-menu-item>
+        </el-menu>
         <div class="html-body">
             <router-view></router-view>
             <BodyRight></BodyRight>
@@ -37,6 +42,11 @@
             .catch(error =>{
                 console.log(error);
             })
+        },
+        methods: {
+            handleSelect(key, keyPath){
+                console.log(key, keyPath)
+            }
         }
     }
 </script>
@@ -46,26 +56,15 @@
         background-color: #0b445b !important;
         min-width: 800px;
         margin-bottom: 20px;
-    }
-    .html-header ul{
         width: 90%;
         padding: 0 5%;
     }
-    .html-header ul li{
-        display:inline-block;
-        width: 11%;
+    .html-header li{
+        font-size: 15px;
         line-height: 54px;
+        width: 11%;
         text-align: center;
     }
-    .html-header ul li a{
-        width: 100%;
-        color: #FFFFFF;
-        text-decoration:none;
-    }
-    .html-header ul li a.active{
-        color: red;
-    }
-
 
     .html-body{
         margin: 0 3%;
