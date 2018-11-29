@@ -1,0 +1,17 @@
+<script type="text/javascript">
+    var INDEX = 0
+    var BLOGVIEW = {}
+    function CountNum(blogid){
+        if (BLOGVIEW.blogid){
+            console.log('if')
+            return BLOGVIEW.blogid
+        } else {
+            console.log('else')
+            BLOGVIEW.blogid = 1
+            return BLOGVIEW.blogid
+        }
+    }
+    console.log(CountNum(1))
+
+    console.log(CountNum(1))
+</script>

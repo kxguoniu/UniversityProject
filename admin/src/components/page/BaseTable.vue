@@ -53,6 +53,9 @@
                                 <el-button type="text" icon="el-icon-lx-edit" style="color: blue;"></el-button>
                             </el-tooltip>
                         </router-link>
+                        <el-tooltip class="item" effect="dark" content="下载" placement="bottom">
+                            <el-button type="text" icon="el-icon-lx-down" class="download" @click="handleDownload(scope.$index, scope.row)"></el-button>
+                        </el-tooltip>
                         <el-tooltip class="item" effect="dark" content="删除" placement="bottom">
                             <el-button type="text" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)"></el-button>
                         </el-tooltip>
@@ -181,10 +184,9 @@
                     method: 'get',
                     url: url,
                     params:{
-                        flag: '1',
+                        flag: '1', //分类
                         page: this.listQuery.page,
                         limit: this.listQuery.limit,
-                        total: this.total,
                         select: this.select,
                         value: this.select_word,
                     }
@@ -230,9 +232,10 @@
                 }
                 this.editVisible = true;
             },
-            // 准备修改数据
-            handleChange(index, row){
-                
+            // 下载文件
+            handleDownload(index, row){
+                var url = this.HOST + 'download'
+                window.location.href = url + '?id=' + row.id
             },
             // 准备删除数据
             handleDelete(index, row) {
@@ -275,8 +278,11 @@
             saveEdit() {
                 let url = this.HOST + 'category';
                 this.$axios({
-                    method: 'post',
+                    method: 'put',
                     url: url,
+                    params: {
+                        flag: 'head',
+                    },
                     data: this.form
                 })
                 .then(res => {
@@ -352,5 +358,9 @@
     }
     .red{
         color: #ff0000;
+        margin: 0 0;
+    }
+    .download{
+        margin: 0 0;
     }
 </style>

@@ -1,10 +1,12 @@
 <template lang="html">
     <div>
         <div class="guidang">
-            <span class="hot-name">归档</span>
+            <span class="guidang-name">归档</span>
         </div>
         <div class="guidang1" v-for="item in bloggroup">
-            <a href="#"><span class="hot-name1">{{ item }}</span></a>
+            <router-link :to="{ path:'/categroay/1', query:{time:item.time} }">
+                <a><span class="guidang-name1">{{ item.flag }}({{ item.nums }})</span></a>
+            </router-link>
         </div>
     </div>
 </template>
@@ -18,7 +20,7 @@
             }
         },
         created(){
-            var url = "/static/group.json";
+            var url = this.HOST + 'timegroup'
             this.$axios.get(url)
             .then(res => {
                 this.bloggroup = res.data.data;
@@ -30,7 +32,7 @@
     }
 </script>
 
-<style type="text/css">
+<style type="text/css" scoped>
     .guidang {
         background-color: #3D4450;
         height: 20px;
@@ -44,6 +46,12 @@
         padding: 8px 15px;
         font-size: 15px;
         border: 1px solid #dddddd;
+    }
+    .guidang-name {
+        color: #FFFFFF;
+    }
+    .guidang-name1 {
+        color: #000000;
     }
     .guidang1 a{
         text-decoration:none;

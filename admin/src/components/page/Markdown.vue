@@ -25,8 +25,9 @@
                                     </el-col>
 
                                     <el-col :span="10">
-                                        <el-form-item label-width="80px" label="发布时间:" class="postInfo-container-item">
-                                        <el-date-picker v-model="postForm.create_time" type="datetime" format="yyyy-MM-dd HH:mm:ss" placeholder="选择日期时间"/>
+                                        <el-form-item label-width="80px" label="发布时间:" class="postInfo-container-item" prop="create_time">
+                                            <el-date-picker v-model="postForm.create_time" type="datetime" format="yyyy-MM-dd HH:mm:ss" placeholder="选择日期时间">
+                                            </el-date-picker>
                                         </el-form-item>
                                     </el-col>
 
@@ -79,13 +80,16 @@
                     </el-form-item>
                 </el-form>
             </div>
-            <mavon-editor v-model="postForm.body" ref="md" @imgAdd="$imgAdd" @change="change" style="min-height: 600px"/>
-            <el-button class="editor-btn" type="primary" @click="submit">提交</el-button>
+            <mavon-editor id="uptext" :ishljs="true" v-model="postForm.body" ref="md" @imgAdd="$imgAdd" @change="change" @imgDel="$imgDel" @save="submit" style="min-height: 600px"/>
+            <input type="file" name="upfile" id="mdfile"/>
+            <el-button class="editor-btn" type="primary" @click="upload(flash)">上传</el-button>
         </div>
     </div>
 </template>
 
 <script>
+    //<el-button id="mdfile" class="editor-btn" type="primary" @click="upload">上传</el-button>
+    import global_ from './Global'
     import { mavonEditor } from 'mavon-editor'
     import 'mavon-editor/dist/css/index.css'
     import MDinput from '../common/MDinput'
@@ -95,10 +99,10 @@
         category: '', // 分类
         taglist: [], //标签
         weight: 1, //重要性
-        body: '', // 文章内容
+        body: '## nihao', // 文章内容
         html: '', // 文章解析内容
         digested: '你好啊,这里是小牛运维站', // 文章摘要
-        create_time: undefined, // 发布时间
+        create_time: '', // 发布时间
     }
     export default {
         name: 'markdown',
@@ -120,6 +124,7 @@
                 postForm: Object.assign({}, defaultForm),
                 rules: {
                     title: [{ validator: validateRequire }],
+                    create_time: [{ validator: validateRequire }]
                 },
             }
         },
@@ -159,11 +164,13 @@
                     url: url,
                     params:{
                         id: id,
+                        json: false
                     }
                 })
                 .then(res => {
                     console.log(res.data)
                     this.postForm = res.data.data;
+                    console.log(this.postForm)
                 })
                 .catch(error => {
                     console.log(error)
@@ -181,14 +188,45 @@
             $imgAdd(pos, $file){
                 var formdata = new FormData();
                 formdata.append('file', $file);
-                // 这里没有服务器供大家尝试，可将下面上传接口替换为你自己的服务器接口
+                var url = this.HOST + 'imgupload'
                 this.$axios({
-                    url: '/common/upload',
+                    url: url,
                     method: 'post',
                     data: formdata,
                     headers: { 'Content-Type': 'multipart/form-data' },
-                }).then((url) => {
-                    this.$refs.md.$img2Url(pos, url);
+                })
+                .then(res => {
+                    if (res.data.status == 0) {
+                        this.$refs.md.$img2Url(pos, res.data.data);
+                        this.$message.success('上传成功')
+                        console.log(res.data.data)
+                    } else {
+                        this.$message.error(res.data.msg)
+                    }
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+            },
+            // 从服务器删除文件
+            $imgDel(file){
+                var url = this.HOST + 'imgupload'
+                this.$axios({
+                    url: url,
+                    method: 'delete',
+                    params: {
+                        name: file[0].name
+                    }
+                })
+                .then(res => {
+                    if (res.data.status == 0) {
+                        this.$message.success(res.data.msg)
+                    } else {
+                        this.$message.error(res.data.msg)
+                    }
+                })
+                .catch(error => {
+                    console.log(error)
                 })
             },
             // 解析后的结果保存到 html
@@ -198,26 +236,67 @@
             // 博文保存
             submit(){
                 console.log(this.postForm);
-                let url = this.HOST + 'blogsave';
-                var postForm = this.postForm;
-                this.$axios({
-                    url: url,
-                    method: 'post',
-                    data: postForm,
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                })
-                .then(res => {
-                    console.log(res.data);
-                    if (res.data.data.status == 1 ){
-                        this.$message.success(res.data.data.msg);
-                    } else {
-                        this.$message.success('提交成功！');
+                if (this.isEdit) {
+                    let url = this.HOST + 'category';
+                    this.$axios({
+                        url: url,
+                        method: 'put',
+                        params: {
+                            flag: 'body',
+                        },
+                        data: this.postForm,
+                        headers: { 'Content-Type': 'multipart/form-data' },
+                    })
+                    .then(res => {
+                        if (res.data.status == 0) {
+                            this.$message.success('修改成功！')
+                        } else {
+                            this.$message.error(res.data.msg)
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        this.$message.error('提交失败！')
+                    })
+                } else {
+                    let url = this.HOST + 'category';
+                    var postForm = this.postForm;
+                    this.$axios({
+                        url: url,
+                        method: 'post',
+                        data: postForm,
+                        headers: { 'Content-Type': 'multipart/form-data' },
+                    })
+                    .then(res => {
+                        console.log(res.data);
+                        if (res.data.status == 1 ){
+                            this.$message.error(res.data.msg);
+                        } else {
+                            this.$message.success('提交成功！');
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        this.$message.error('提交失败');
+                    })
+                }
+            },
+            upload(callback){
+                var files = document.getElementById('mdfile').files[0]
+                if (files.size > 1048576) {
+                    this.$message.error('WARING！ 文件大于1M')
+                } else {
+                    var reader = new FileReader();
+                    reader.readAsText(files)
+                    reader.onload = function(){
+                        global_.uploadfile = ''
+                        global_.uploadfile = this.result
+                        callback()
                     }
-                })
-                .catch(error => {
-                    console.log(error);
-                    this.$message.error('提交失败');
-                })
+                }
+            },
+            flash(){
+                this.postForm.body = global_.uploadfile
             }
         }
     }

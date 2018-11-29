@@ -4,18 +4,31 @@ import tornado.ioloop
 import tornado.options
 import tornado.log
 from tornado.options import define, options
+from tornado.log import access_log
 from mysqlpool import sqlconn
 from monitor import monitor
+from urllib.parse import quote
 import logging
 import uuid
 import threading
 import markdown
+import datetime
 import json
 import os
 
 define("port", default=8888, help="run on the given port", type=int)
 LOCKFILE = os.path.dirname(os.path.abspath(__file__)) + "/system.lock"
 dict_session = {}
+
+
+class JsonDateTime(json.JSONEncoder):
+    '''
+    使json序列化支持时间转换
+    '''
+    def default(self, obj):
+        if isinstance(obj, datetime.datetime):
+            return obj.strftime('%Y-%m-%d %H:%M:%S')
+        return super().default(obj)
 
 
 class LogFormatter(tornado.log.LogFormatter):
@@ -29,10 +42,40 @@ class LogFormatter(tornado.log.LogFormatter):
         )
 
 
+def Custom(handler):
+    if handler.get_status() < 400:
+        log_method = access_log.info
+    elif handler.get_status() < 500:
+        log_method = access_log.warning
+    else:
+        log_method = access_log.error
+    request_time = 1000.0 * handler.request.request_time()
+    print(type(handler.request))
+    if "_dict" in handler.request.headers.keys() and "X-Real-Ip" in handler.request.headers['_dict'].keys():
+        real_ip = handler.request.headers['_dict']['X-Real-Ip']
+    elif "_as_list" in handler.request.headers.keys() and "X-Real-Ip" in handler.request.headers['_as_list'].keys():
+        real_ip = handler.request.headers['_as_list']['X-Real-Ip']
+    elif  hasattr(handler.request, "remote_ip"):
+        real_ip = handler.request.remote_ip
+    else:
+        real_ip = "127.0.0.1"
+    log_method("%s %d %s %.2fms", real_ip, handler.get_status(),
+                   handler._request_summary(), request_time)
+
+
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         session_id = self.get_secure_cookie("session_id")
         return dict_session.get(session_id.decode())
+
+    def write(self, chunk):
+        '''
+        重写write方法,支持json序列化时间对象
+        '''
+        if isinstance(chunk, dict):
+            chunk = json.dumps(chunk, cls=JsonDateTime).replace("</", "<\\/")
+            self.set_header("Content-Type", "application/json; charset=UTF-8")
+        super().write(chunk)
 
 
 class BlogHandler(BaseHandler):
@@ -45,7 +88,7 @@ class BlogHandler(BaseHandler):
         sql = "select blog.*,category.name from blog,category where blog.category_id = category.id and category.name = %s"
         number,results = sqlconn.exec_sql_feach(sql,(flag))
 
-        self.write(json.dumps(results))
+        self.write(results)
 
 
 class LoginHandler(BaseHandler):
@@ -76,21 +119,21 @@ class LogoutHandler(BaseHandler):
     '''
     登出
     '''
-    @tornado.web.authenticated
+    #@tornado.web.authenticated
     def get(self):
         del dict_session[self.get_secure_cookie('session_id').decode()]
         self.write({'status':0, 'msg':'退出成功'})
 
 
 class MainHandler(BaseHandler):
-    @tornado.web.authenticated
+    #@tornado.web.authenticated
     def get(self):
         self.render("index.html")
 
 
 class CateGoryHandler(BaseHandler):
     '''
-    分类博文列表
+    博文增删改查
     '''
     #@tornado.web.authenticated
     def get(self):
@@ -105,14 +148,36 @@ class CateGoryHandler(BaseHandler):
         flag = self.get_argument("flag", '')
         page = self.get_argument("page", 1)
         size = self.get_argument("limit", 20)
-        total = self.get_argument("total", 0)
         select = self.get_argument("select", '')
         value = self.get_argument("value", '')
 
         sql = "select blog.id,blog.title,blog.weight,author.name as author,category.name as category,blog.create_time,blog.change_time,blog.views,blog.digested from blog left join category on blog.category_id = category.id left join author on blog.author_id = author.id "
         pagesize = (int(page)-1)*int(size)
         size = int(size)
-        if not select:
+
+        if select in ['author', 'category', 'title', 'digested'] and value:
+            print('文字搜索')
+            if select in ['author', 'category']:
+                sql += "where %s.name like '%s' "
+            else:
+                sql += "where %s like '%s' "
+            value = '%' + value + '%'
+        elif select in ['views', 'weight'] and value:
+            print('数字搜索')
+            if value[0] == '@':
+                value = value[1:]
+                sql += "where %s<%s "
+            elif value[-1] == '$':
+                value = value[:-1]
+                sql += "where %s>%s "
+            else:
+                sql += "where %s=%s "
+            try:
+                value = int(value)
+            except:
+                return self.write({'status':1, 'msg':'输入值不合法'})
+
+        else:
             print('不搜索')
             totalnum = sqlconn.exec_sql(sql)
             if flag != '1':
@@ -123,37 +188,12 @@ class CateGoryHandler(BaseHandler):
                 number,results = sqlconn.exec_sql_feach(sql,(pagesize,size))
 
             if results:
-                for i in results:
-                    i['create_time'] = str(i['create_time'])
-                    i['change_time'] = str(i['change_time'])
                 re_data = {'status': 0, 'msg':'' , 'data':results}
             else:
                 re_data = {'status': 1, 'msg':'查无此人' , 'data':''}
 
             re_data['total'] = totalnum if totalnum else 0
             return self.write(re_data)
-        elif select in ['author', 'category', 'title', 'digested']:
-            print('文字搜索')
-            if select in ['author', 'category']:
-                sql += "where %s.name like '%s' "
-            else:
-                sql += "where %s like '%s' "
-            value = '%' + value + '%'
-        elif select in ['views', 'weight']:
-            print('数字搜索')
-            if value[0] == '@':
-                value = value[1:]
-                sql += "where %s<%s "
-            elif value[-1] == '$':
-                value = value[:-1]
-                sql += "where %s>%s "
-            else:
-                sql += "where %s=%s "
-
-            try:
-                value = int(value)
-            except:
-                return self.write({'status':1, 'msg':'输入值不合法'})
 
         if flag != '1':
             sql += "and category.id=%s limit %s,%s"
@@ -168,9 +208,6 @@ class CateGoryHandler(BaseHandler):
             number,results = sqlconn.exec_sql_feach(resql)
 
         if results:
-            for i in results:
-                i['create_time'] = str(i['create_time'])
-                i['change_time'] = str(i['change_time'])
             re_data = {'status': 0, 'msg':'' , 'data':results}
         else:
             re_data = {'status': 1, 'msg':'查无此人' , 'data':''}
@@ -178,155 +215,65 @@ class CateGoryHandler(BaseHandler):
         re_data['total'] = totalnum if totalnum else 0
         self.write(re_data)
 
-    @tornado.web.authenticated
-    def post(self):
+    #@tornado.web.authenticated
+    def put(self):
         '''
         博文修改
+        :flag   修改类型
         :title  标题
         :category 标签
         :weight   权重
         :blogid   博文id
         '''
-        user = self.current_user
-        if user != 'nkx':
+        if self.current_user != 'nkx':
             return self.write({'status':1, 'msg':'WARRING!  权限不足'})
-        body = json.loads(self.request.body)
-        title = body['title']
-        category = body['category']
-        weight = body['weight']
-        blogid = body['id']
- 
-        categorysql = "select id from category where category.name=%s"
-        number,results = sqlconn.exec_sql_feach(categorysql,(category))
-        if number:
-            categoryid = cursor.fetchall()[0]['id']
-            blogsql = "update blog set title=%s,category_id=%s,weight=%s where id=%s"
-            blognumber = sqlconn.exec_sql(blogsql,(title,categoryid,weight,blogid))
+        flag = self.get_argument('flag','')
+        if flag == 'body':
+            body = json.loads(self.request.body)
+            blogid = body['id']
+            blogtext = body['body']
+            digested = body['digested']
+            bloghtml = markdown.markdown(blogtext, extensions=['markdown.extensions.extra','markdown.extensions.toc','markdown.extensions.codehilite'])
+
+            blogsql = "update blog set body=%s,digested=%s,html=%s where id=%s"
+            blognumber = sqlconn.exec_sql(blogsql,(blogtext,digested,bloghtml,blogid))
             if blognumber:
                 re_data = {'status':0, 'msg':'修改成功'}
             else:
-                re_data = {'status':1, 'msg':'保存失败'}
-        else:
-            re_data = {'status':1, 'msg':'分类不存在'}
-        self.write(re_data)
+                re_data = {'status':1, 'msg':'修改失败'}
+            return self.write(re_data)
 
-    @tornado.web.authenticated
-    def delete(self):
+        elif flag == 'head':
+            body = json.loads(self.request.body)
+            title = body['title']
+            category = body['category']
+            weight = body['weight']
+            blogid = body['id']
+     
+            categorysql = "select id from category where category.name=%s"
+            number,results = sqlconn.exec_sql_feach(categorysql,(category))
+            if number:
+                categoryid = results[0]['id']
+                blogsql = "update blog set title=%s,category_id=%s,weight=%s where id=%s"
+                blognumber = sqlconn.exec_sql(blogsql,(title,categoryid,weight,blogid))
+                if blognumber:
+                    re_data = {'status':0, 'msg':'修改成功'}
+                else:
+                    re_data = {'status':1, 'msg':'保存失败'}
+            else:
+                re_data = {'status':1, 'msg':'分类不存在'}
+            return self.write(re_data)
+        else:
+            return self.write({'status':1, 'msg':'无法识别的参数'})     
+
+    #@tornado.web.authenticated
+    def post(self):
         '''
-        博文删除
-        :blogid  博文id/单点删除
-        :listid  博文id列表/批量删除
+        新建博文
         '''
         if self.current_user != 'nkx':
             return self.write({'status':1, 'msg':'WARRING!  权限不足'})
-        blogid = self.get_argument('id',-1)
-        listid = self.get_argument('id', {})
-        if blogid != -1 and type(blogid) == int:
-            blogid = int(blogid)
 
-            number = sqlconn.exec_sql(deletesql,(blogid))
-            if number:
-                re_data = {'status':0, 'msg':'删除成功'}
-            else:
-                re_data = {'status':1, 'msg':'删除失败'}
-            return self.write(re_data)
-        elif listid:
-            listid = json.loads(listid)
-            deletesql = "delete from blog where id=%s"
-            for i in listid:
-                print(i)
-                number = sqlconn.exec_sql(deletesql,(listid[i]))
-            re_data = {'status':0, 'msg':'删除成功'}
-            return self.write(re_data)
-        else:
-            return self.write({'status':1, 'msg':'传值错误'})
-
-
-class TagBlogHandler(BaseHandler):
-    #返回标签对应的博文
-
-    def get(self):
-        tag = self.get_argument("tag",'')
-        if tag:
-            sql = "select blog.id,blog.title,author.name as author,category.name as category,blog.create_time,blog.change_time,blog.views,blog.digested "
-            sql += "from blogtag "
-            sql += "left join blog on blog.id = blogtag.blog_id left join tag on tag.id = blogtag.tag_id "
-            sql += "left join category on blog.category_id = category.id left join author on blog.author_id = author.id "
-            sql += "where blogtag.tag_id=%s"
-        else:
-            return self.finish({'status': 1, 'msg':'无效的查询参数' , 'data':''})
-        
-        number,results = sqlconn.exec_sql_feach(sql,(tag))
-        if results:
-            for i in results:
-                i['create_time'] = str(i['create_time'])
-                i['change_time'] = str(i['change_time'])
-            re_data = {'status': 0, 'msg':'' , 'data':results}
-        else:
-            re_data = {'status': 1, 'msg':'查无此人' , 'data':''}
-        self.write(re_data)
-
-
-class TagListHandler(BaseHandler):
-    #返回标签列表
-    @tornado.web.authenticated
-    def get(self):
-        tagsql = "select tag.name from tag"
-
-        number,results = sqlconn.exec_sql_feach(tagsql)
-
-        lists = {}
-        lists['tag'] = results
-        categorysql = "select name from category"
-        number,results = sqlconn.exec_sql_feach(categorysql)
-
-        lists['category'] = results
-
-
-        if results:
-            re_data = {'status': 1, 'msg':'' , 'data':lists}
-        else:
-            re_data = {'status': 1, 'msg':'查无此人' , 'data':''}
-        self.write(re_data)
-
-
-class DetailHandler(BaseHandler):
-
-    def get(self):
-        Id = self.get_argument("id",'')
-        sql = "select blog.id,blog.title,blog.weight,blog.body,author.name as author,category.name as category,blog.create_time,blog.change_time,blog.views,blog.digested "
-        sql += "from blog "
-        sql += "left join category on blog.category_id = category.id "
-        sql += "left join author on blog.author_id = author.id "
-        if Id:
-            sql += "where blog.id = %s"
-
-            number,results = sqlconn.exec_sql_feach(sql,(Id))
-        else:
-            return self.finish({'status': 1, 'msg':'无效的查询参数' , 'data':''})
-
-        if results:
-            results = results[0]
-            results['create_time'] = str(results['create_time'])
-            results['change_time'] = str(results['change_time'])
-            results['body'] = markdown.markdown(results['body'], extensions=['markdown.extensions.extra','markdown.extensions.toc','markdown.extensions.codehilite'])
-            
-            tagsql = "select tag.name from blogtag LEFT JOIN tag on tag.id = blogtag.tag_id where blogtag.blog_id =%s"
-            number,taglist = sqlconn.exec_sql_feach(tagsql,(results['id']))
-  
-            listtag = []
-            for i in taglist:
-                listtag.append(i['name'])
-            results['taglist'] = listtag
-            re_data = {'status': 0, 'msg':'' , 'data':results,}
-        else:
-            re_data = {'status': 1, 'msg':'查无此人' , 'data':''}
-        self.write(re_data)
-
-
-class BlogSaveHandler(BaseHandler):
-
-    def post(self):
         body = self.request.body
         body = json.loads(body)
         print(body)
@@ -342,8 +289,11 @@ class BlogSaveHandler(BaseHandler):
             author_id = results[0]['id']
             print('author_id',type(author_id))
         print(type(body['weight']))
-        sql = """insert into blog (title,body,digested,author_id,category_id,weight) values (%s,%s,%s,%s,%s,%s)"""
-        number,results = sqlconn.exec_sql_feach(sql,(body['title'],body['content'],body['content_short'],author_id,category_id,body['weight']))
+        sql = """insert into blog (title,body,html,digested,author_id,category_id,weight,create_time) values (%s,%s,%s,%s,%s,%s,%s,%s)"""
+        if 'create_time' not in body.keys():
+            body['create_time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        body['html'] = markdown.markdown(body['body'], extensions=['markdown.extensions.extra','markdown.extensions.toc','markdown.extensions.codehilite'])
+        number,results = sqlconn.exec_sql_feach(sql,(body['title'],body['body'],body['html'],body['digested'],author_id,category_id,body['weight'],body['create_time']))
         if number:
             number,blog_id = sqlconn.exec_sql_feach("""select id from blog where blog.title=%s""",(body['title']))
             blog_id = blog_id[0]['id']
@@ -360,6 +310,118 @@ class BlogSaveHandler(BaseHandler):
         re_data = {'status': 0, 'msg':'查无此人' , 'data': body}
         self.write(re_data)
 
+    #@tornado.web.authenticated
+    def delete(self):
+        '''
+        博文删除
+        :blogid  博文id/单点删除
+        :listid  博文id列表/批量删除
+        '''
+        if self.current_user != 'nkx':
+            return self.write({'status':1, 'msg':'WARRING!  权限不足'})
+        blogid = self.get_argument('id',-1)
+        listid = self.get_argument('id', {})
+        deletesql = "delete from blog where id=%s"
+        deletetag = "delete from blogtag where blog_id=%s"
+        print(blogid,type(blogid))
+        if blogid != -1 and type(blogid) == str:
+            blogid = int(blogid)
+            number = sqlconn.exec_sql(deletesql,(blogid))
+            if number:
+                tagnumber = sqlconn.exec_sql(deletetag,(blogid))
+                print(tagnumber)
+                re_data = {'status':0, 'msg':'删除成功'}
+            else:
+                re_data = {'status':1, 'msg':'删除失败'}
+            return self.write(re_data)
+        elif listid:
+            listid = json.loads(listid)
+            for i in listid:
+                number = sqlconn.exec_sql(deletesql,(listid[i]))
+                if number:
+                    sqlconn.exec_sql(deletetag,(blogid))
+            re_data = {'status':0, 'msg':'删除成功'}
+            return self.write(re_data)
+        else:
+            return self.write({'status':1, 'msg':'传值错误'})
+
+
+class TagBlogHandler(BaseHandler):
+    #返回标签对应的博文
+
+    def get(self):
+        tag = self.get_argument("flag",'')
+        if tag:
+            sql = "select blog.id,blog.title,author.name as author,category.name as category,blog.create_time,blog.change_time,blog.views,blog.digested "
+            sql += "from blog "
+            sql += "left join blogtag on blog.id = blogtag.blog_id left join tag on tag.id = blogtag.tag_id "
+            sql += "left join category on blog.category_id = category.id left join author on blog.author_id = author.id "
+            sql += "where blogtag.tag_id=%s"
+        else:
+            return self.finish({'status': 1, 'msg':'无效的查询参数' , 'data':''})
+        
+        number,results = sqlconn.exec_sql_feach(sql,(tag))
+        if results:
+            re_data = {'status': 0, 'msg':'' , 'data':results}
+        else:
+            re_data = {'status': 1, 'msg':'查无此人' , 'data':''}
+        self.write(re_data)
+
+
+class TagListHandler(BaseHandler):
+    #返回标签/分类列表
+    #@tornado.web.authenticated
+    def get(self):
+        lists = {}
+
+        tagsql = "select tag.name,tag.id from tag"
+        number,results = sqlconn.exec_sql_feach(tagsql)
+        lists['tag'] = results
+
+        categorysql = "select name,id from category"
+        number,results = sqlconn.exec_sql_feach(categorysql)
+        lists['category'] = results
+
+        re_data = {'status': 1, 'msg':'' , 'data':lists}
+        self.write(re_data)
+
+
+class DetailHandler(BaseHandler):
+
+    def get(self):
+        Id = self.get_argument("id",'')
+        jsons = self.get_argument("json", '')
+        if not jsons:
+            sql = "select blog.id,blog.title,blog.weight,blog.html,author.name as author,category.name as category,blog.create_time,blog.change_time,blog.views,blog.digested "
+        else:
+            sql = "select blog.id,blog.title,blog.weight,blog.body,author.name as author,category.name as category,blog.create_time,blog.change_time,blog.views,blog.digested "
+        sql += "from blog "
+        sql += "left join category on blog.category_id = category.id "
+        sql += "left join author on blog.author_id = author.id "
+        if Id:
+            sql += "where blog.id = %s"
+            number,results = sqlconn.exec_sql_feach(sql,(Id))
+        else:
+            return self.finish({'status': 1, 'msg':'无效的查询参数' , 'data':''})
+
+        if results:
+            results = results[0]
+            #if not json:
+            #    results['body'] = markdown.markdown(results['body'], extensions=['markdown.extensions.extra','markdown.extensions.toc','markdown.extensions.codehilite'])
+            
+            tagsql = "select tag.name from blogtag LEFT JOIN tag on tag.id = blogtag.tag_id where blogtag.blog_id =%s"
+            number,taglist = sqlconn.exec_sql_feach(tagsql,(results['id']))
+  
+            #listtag = []
+            #for i in taglist:
+            #    listtag.append(i['name'])
+            #results['taglist'] = listtag
+            results['taglist'] = [i['name'] for i in taglist]
+            re_data = {'status': 0, 'msg':'' , 'data':results,}
+        else:
+            re_data = {'status': 1, 'msg':'查无此人' , 'data':''}
+        self.write(re_data)
+
 
 class NewBlogHandler(BaseHandler):
 
@@ -373,9 +435,6 @@ class NewBlogHandler(BaseHandler):
         number,results = sqlconn.exec_sql_feach(sql)
 
         if results:
-            for i in results:
-                i['create_time'] = str(i['create_time'])
-                i['change_time'] = str(i['change_time'])
             re_data = {'status': 0, 'msg':'' , 'data':results}
         else:
             re_data = {'status': 0, 'msg':'查无此人' , 'data':''}
@@ -416,6 +475,38 @@ class SystemHandler(BaseHandler):
         self.write(re_data)
 
 
+class TimeGroupHandler(BaseHandler):
+    '''
+    时间分组展示
+    '''
+    def get(self):
+        flag = self.get_argument('flag', '')
+        if not flag:
+            sql = "select count(id) as nums,DATE_FORMAT(create_time,'%Y-%m') as time from blog group by DATE_FORMAT(create_time,'%Y-%m')"
+            number,results = sqlconn.exec_sql_feach(sql)
+            if results:
+                for i in results:
+                    year,mouth = i['time'].split('-')
+                    i['flag'] = year + '年' + mouth + '月'
+            else:
+                results = []
+            re_data = {'status':0, 'msg':'', 'data':results}
+            return self.write(re_data)
+        else:
+            sql = "select blog.id,blog.title,author.name as author,category.name as category,blog.create_time,blog.change_time,blog.views,blog.digested "
+            sql += "from blog "
+            sql += "left join category on blog.category_id = category.id left join author on blog.author_id = author.id "
+            sql += "where create_time like '%s%%' "
+
+            sql = sql%(flag)
+            number,results = sqlconn.exec_sql_feach(sql)
+            if results:
+                re_data = {'status':0, 'data':results}
+            else:
+                re_data = {'status':1, 'msg':'asdf'}
+            self.write(re_data)
+
+
 class MessageHandler(BaseHandler):
     '''
     系统通知
@@ -429,8 +520,6 @@ class MessageHandler(BaseHandler):
         number,results = sqlconn.exec_sql_feach(msgsql)
 
         if results:
-            for i in results:
-                i['create_time'] = str(i['create_time'])
             re_data = {'status': 0, 'msg':'' , 'data':results}
         else:
             re_data = {'status': 0, 'msg':'无数据' , 'data':[]}
@@ -450,13 +539,89 @@ class MessageHandler(BaseHandler):
         self.write(re_data)
 
 
+class ImgUploadHandler(BaseHandler):
+    def post(self):
+        '''
+        图片上传
+        '''
+        upload_path = os.path.join(os.path.dirname(__file__), 'upload')
+        #upload_path = "/home/niukaixin/www/html/static/img/"
+        files = self.request.files.get('file', None)
+        if not files:
+            re_data = {'status':1, 'msg':'没有接收到文件'}
+            return self.write(re_data)
+
+        for file in files:
+            filename = file['filename']
+            filepath = os.path.join(upload_path, filename)
+            print(filepath)
+            with open(filepath, 'wb') as f:
+                f.write(file['body'])
+
+        re_data = {'status':0, 'data':'http://123.206.95.123:8080/static/img/'+filename}
+        self.write(re_data)
+
+    def delete(self):
+        '''
+        图片删除
+        '''
+        upload_path = os.path.join(os.path.dirname(__file__), 'upload')
+        filename = self.get_argument('name', '')
+        if not filename:
+            return self.write({'status':1, 'msg':'没有参数'})
+        filepath = os.path.join(upload_path, filename)
+        os.remove(filepath)
+        self.write({'status':0, 'msg':'删除图片成功'})
+
+
+class DownloadHandler(BaseHandler):
+    def get(self,):
+        blogid = self.get_argument('id','')
+        blogsql = 'select title,body from blog where id=%s'
+        number,results = sqlconn.exec_sql_feach(blogsql,(blogid))
+        if number:
+            results = results[0]
+            title = results['title']
+            self.set_header('Content-Type', 'application/octet-stream')
+            self.set_header('Content-Disposition', 'attachment; filename=' + quote(title) + '.md')
+            self.write(str(results['body']))
+        else:
+            self.write({'msg':'下载失败'})
+
+
+class CountView(BaseHandler):
+    def get(self):
+        index = self.get_argument('index', '')
+        blogid = self.get_argument('id', '')
+        if index:
+            now = datetime.date.today()
+            print(now)
+            sql = 'select id from visitor where time=%s'
+            status = sqlconn.exec_sql(sql,(now))
+            if status:
+                print('自增')
+                sql2 = 'update visitor set sums=sums+1 where time=%s'
+                sqlconn.exec_sql(sql2,(now))
+            else:
+                print('新建')
+                sql2 = "insert into visitor (time,sums) values (%s,1)"
+                sqlconn.exec_sql(sql2,(now))
+            return self.write({'status':0})
+
+        elif blogid:
+            blogsql = 'update blog set views=views+1 where id=%s'
+            sqlconn.exec_sql(blogsql,(blogid))
+            return self.write({'status':0})
+
+        self.write({'status':1, 'msg':'无效参数'})
+
+
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             (r'/', MainHandler),        #首页
             (r'/newblog', NewBlogHandler),      #最新博文
-            (r'/category', CateGoryHandler),    #分类博文列表
-            (r'/blogsave', BlogSaveHandler),    #保存博文
+            (r'/category', CateGoryHandler),    #博文增删改查
             (r'/tagblog', TagBlogHandler),      #标签博文列表
             (r'/taglist', TagListHandler),      #标签/分类 列表
             (r'/detail', DetailHandler),        #博文详情
@@ -465,8 +630,13 @@ class Application(tornado.web.Application):
             (r'/blog', BlogHandler),            #无
             (r'/system', SystemHandler),        #系统监控
             (r'/message', MessageHandler),      #系统通知
+            (r'/timegroup', TimeGroupHandler),  #时间分组
+            (r'/imgupload', ImgUploadHandler),  #图片上传
+            (r'/download', DownloadHandler),    #博文下载
+            (r'/countview', CountView),         #访问计数
         ]
         settings = dict(
+            log_function=Custom,
             debug=True,     #调试模式
             cookie_secret="SECRET_DONT_LEAK",
             login_url="/login",
@@ -512,7 +682,7 @@ def main():
         app = Application()
         # 监控开启
         #monitor.LockFile(True,LOCKFILE)
-        #st = threading.Thread(target=skynet, args=(LOCKFILE,))
+        #st = threading.Thread(target=monitor.skynet, args=(LOCKFILE,))
         #st.start()
         
         # mysqlconn check
@@ -525,7 +695,7 @@ def main():
     except Exception as e:
         print(e)
     finally:
-        LockFile(False)
+        #monitor.LockFile(False)
         print('清理结束')
         #stop_thread(st)
         stop_thread(tt)

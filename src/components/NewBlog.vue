@@ -3,15 +3,17 @@
         <div class="hot">
             <span class="hot-name">最新文章</span>
         </div>
-        <div class="hot1" v-for="newblog in newblogs">
-            <a @click="ShowDetail(newblog.id)"><span class="hot-name1">{{ newblog.title }}</span></a>
+        <div class="hot1" v-for="(newblog,index) in newblogs" :key="index">
+            <router-link :to="'/blogdetail/'+ newblog.id">
+                <a><span class="hot-name1">{{ newblog.title }}</span></a>
+            </router-link>
         </div>
     </div>
 </template>
 
 <script type="text/javascript">
     export default{
-        name:"",
+        name:"news",
         data(){
             return{
                 newblogs:[],
@@ -24,7 +26,6 @@
             this.$axios.get(url)
             .then(res => {
                 this.newblogs = res.data.data;
-                console.log(this.newblogs);
             })
             .catch(error => {
                 console.log(error);
@@ -33,7 +34,6 @@
         methods:{
             ShowDetail(Id){
                 var url = this.HOST + "detail";
-                console.log(url+Id);
                 this.$axios.get(url, {
                     params:{
                         id:Id
@@ -61,7 +61,7 @@
     }
 </script>
 
-<style type="text/css">
+<style type="text/css" scoped>
     .hot {
         background-color: #3D4450;
         height: 20px;

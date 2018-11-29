@@ -4,7 +4,7 @@ import Router from 'vue-router';
 Vue.use(Router);
 
 export default new Router({
-    mode: 'history',
+    //mode: 'history',
     routes: [
         {
             path: '/',
@@ -52,7 +52,7 @@ export default new Router({
                     component: resolve => require(['../components/page/Edit.vue'], resolve),
                     meta: { title: '编辑博文' }
                 },
-                /*
+                
                 {
                     path: '/icon',
                     component: resolve => require(['../components/page/Icon.vue'], resolve),
@@ -102,7 +102,7 @@ export default new Router({
                     path: '/403',
                     component: resolve => require(['../components/page/403.vue'], resolve),
                     meta: { title: '403' }
-                }*/
+                }
             ]
         },
         {

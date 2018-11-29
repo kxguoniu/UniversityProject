@@ -1,10 +1,12 @@
 <template lang="html">
     <div>
-        <div class="guidang">
-            <span class="hot-name">标签云</span>
+        <div class="biaoqian">
+            <span class="biaoqian-name">标签云</span>
         </div>
-        <div class="biaoqian" v-for="tag in tags">
-            <a @click="TagDetail(tag.id)" href="#">{{ tag.name }}</a>
+        <div class="biaoqian1" v-for="tag in tags">
+            <router-link :to="{ path:'/categroay/1', query:{id:tag.id} }">
+                <a>{{ tag.name }}</a>
+            </router-link>
         </div>
     </div>
 </template>
@@ -26,34 +28,31 @@
             .catch(error => {
                 console.log(error);
             })
-        },
-        methods:{
-            TagDetail(val){
-                var url = this.HOST + 'tagblog';
-                this.$axios.get(url, {
-                    params:{
-                        tag:val
-                    }
-                })
-                .then(res => {
-                    var blog = res.data.data;
-                    this.bus.$emit('taglist', false, blog);
-                    this.bus.$emit('toc', '', false);
-                })
-            }
         }
     }
 </script>
 
-<style type="text/css">
+<style type="text/css" scoped>
     .biaoqian {
+        background-color: #3D4450;
+        padding: 5px 5px;
+        margin-right: 10px;
+        margin-top: 40px;
+    }
+    .biaoqian-name {
+        color: #FFFFFF;
+    }
+    .biaoqian-name1 {
+        color: #000000;
+    }
+    .biaoqian1 {
         float: left;
         background-color: #3D4450;
         padding: 5px 5px;
         margin-top: 10px;
         margin-right: 10px;
     }
-    .biaoqian a{
+    .biaoqian1 a{
         color: #FFFFFF;
         text-decoration:none;
     }
