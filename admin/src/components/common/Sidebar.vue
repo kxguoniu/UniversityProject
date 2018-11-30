@@ -59,10 +59,11 @@
                         title: '系统监控'
                     },
                     {
-                        icon: 'el-icon-lx-copy',
+                        icon: 'el-icon-bell',
                         index: '/message',
                         title: '系统消息'
                     },
+                    /*
                     {
                         icon: 'el-icon-lx-calendar',
                         index: '3',
@@ -117,7 +118,7 @@
                                 title: '404页面'
                             }
                         ]
-                    }
+                    }*/
                 ]
             }
         },

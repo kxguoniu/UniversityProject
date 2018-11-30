@@ -15,7 +15,7 @@ Vue.config.productionTip = false
 Vue.prototype.$axios  = Axios
 Vue.prototype.HOST = './local'
 Vue.prototype.GLOBAL = _global
-//Vue.prototype.HOST = 'http://123.206.95.123:8080/'
+//Vue.prototype.HOST = 'http://123.206.95.123/'
 
 Vue.use(ElementUI)
 

@@ -174,8 +174,6 @@
                 this.categorylist = res.data.data.category;
             })
         },
-        computed: {
-        },
         methods: {
             // 获取博文列表
             getList() {
@@ -332,11 +330,11 @@
 </script>
 
 <style scoped>
-    .pagination span{
-        text-align: left;
+    .pagination{
+        text-align: center;
     }
     .pagination el-pagination__sizes{
-        text-align: left;
+        text-align: center;
     }
     .handle-box {
         margin-bottom: 20px;

@@ -8,6 +8,7 @@ from tornado.log import access_log
 from mysqlpool import sqlconn
 from monitor import monitor
 from urllib.parse import quote
+#from urllib import quote
 import logging
 import uuid
 import threading
@@ -50,23 +51,19 @@ def Custom(handler):
     else:
         log_method = access_log.error
     request_time = 1000.0 * handler.request.request_time()
-    print(type(handler.request))
-    if "_dict" in handler.request.headers.keys() and "X-Real-Ip" in handler.request.headers['_dict'].keys():
-        real_ip = handler.request.headers['_dict']['X-Real-Ip']
-    elif "_as_list" in handler.request.headers.keys() and "X-Real-Ip" in handler.request.headers['_as_list'].keys():
-        real_ip = handler.request.headers['_as_list']['X-Real-Ip']
-    elif  hasattr(handler.request, "remote_ip"):
-        real_ip = handler.request.remote_ip
+    if "X-Real-Ip" in handler.request.headers.keys():
+        real_ip = handler.request.headers["X-Real-Ip"]
     else:
         real_ip = "127.0.0.1"
-    log_method("%s %d %s %.2fms", real_ip, handler.get_status(),
-                   handler._request_summary(), request_time)
+    log_method("%s %d %s %s %s %.2fms", real_ip, handler.get_status(),
+                   handler.request.version, handler.request.method, handler.request.uri, request_time)
 
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         session_id = self.get_secure_cookie("session_id")
-        return dict_session.get(session_id.decode())
+        if session_id:
+            return dict_session.get(session_id.decode())
 
     def write(self, chunk):
         '''
@@ -176,41 +173,38 @@ class CateGoryHandler(BaseHandler):
                 value = int(value)
             except:
                 return self.write({'status':1, 'msg':'输入值不合法'})
-
         else:
             print('不搜索')
-            totalnum = sqlconn.exec_sql(sql)
             if flag != '1':
+                print('不是首页')
+                totalsql = sql + "where category.id=%s"
+                totalnum = sqlconn.exec_sql(totalsql,(flag))
                 sql += "where category.id=%s limit %s,%s"
                 number,results = sqlconn.exec_sql_feach(sql,(flag,pagesize,size))
             elif flag == '1':
+                print('首页')
+                totalnum = sqlconn.exec_sql(sql)
                 sql += "limit %s,%s"
                 number,results = sqlconn.exec_sql_feach(sql,(pagesize,size))
 
             if results:
                 re_data = {'status': 0, 'msg':'' , 'data':results}
             else:
-                re_data = {'status': 1, 'msg':'查无此人' , 'data':''}
+                re_data = {'status': 1, 'msg':'数据为空' , 'data':''}
 
             re_data['total'] = totalnum if totalnum else 0
             return self.write(re_data)
 
-        if flag != '1':
-            sql += "and category.id=%s limit %s,%s"
-            totalsql = sql + "and category.id=%s"
-            totalnum = sqlconn.exec_sql(totalsql,(select,value,flag))
-            number,results = sqlconn.exec_sql_feach(sql,(select,value,flag,pagesize,size))
-        elif flag == '1':
-            sql += "limit %s,%s"
-            resql = sql%(select,value,pagesize,size)
-            print(resql)
-            totalnum = sqlconn.exec_sql(resql)
-            number,results = sqlconn.exec_sql_feach(resql)
+        totalsql = sql%(select,value)
+        totalnum = sqlconn.exec_sql(totalsql)
+        sql += "limit %s,%s"
+        resql = sql%(select,value,pagesize,size)
+        number,results = sqlconn.exec_sql_feach(resql)
 
         if results:
             re_data = {'status': 0, 'msg':'' , 'data':results}
         else:
-            re_data = {'status': 1, 'msg':'查无此人' , 'data':''}
+            re_data = {'status': 1, 'msg':'数据为空' , 'data':''}
 
         re_data['total'] = totalnum if totalnum else 0
         self.write(re_data)
@@ -351,6 +345,11 @@ class TagBlogHandler(BaseHandler):
 
     def get(self):
         tag = self.get_argument("flag",'')
+        page = self.get_argument("page", 1)
+        size = self.get_argument("limit", 5)
+
+        pagesize = (int(page)-1)*int(size)
+        size = int(size)
         if tag:
             sql = "select blog.id,blog.title,author.name as author,category.name as category,blog.create_time,blog.change_time,blog.views,blog.digested "
             sql += "from blog "
@@ -360,11 +359,14 @@ class TagBlogHandler(BaseHandler):
         else:
             return self.finish({'status': 1, 'msg':'无效的查询参数' , 'data':''})
         
-        number,results = sqlconn.exec_sql_feach(sql,(tag))
-        if results:
+        totalnum = sqlconn.exec_sql(sql,(flag))
+        sql += " limit %s,%s"
+        number,results = sqlconn.exec_sql_feach(sql,(tag,pagesize,size))
+        if number:
             re_data = {'status': 0, 'msg':'' , 'data':results}
         else:
-            re_data = {'status': 1, 'msg':'查无此人' , 'data':''}
+            re_data = {'status': 1, 'msg':'没有数据' , 'data':''}
+        re_data['total'] = totalnum if totalnum else 0
         self.write(re_data)
 
 
@@ -480,14 +482,22 @@ class TimeGroupHandler(BaseHandler):
     时间分组展示
     '''
     def get(self):
+        '''
+        flag 没有返回分组，有返回分组内博文
+        '''
         flag = self.get_argument('flag', '')
+        page = self.get_argument("page", 1)
+        size = self.get_argument("limit", 5)
+
+        pagesize = (int(page)-1)*int(size)
+        size = int(size)
         if not flag:
             sql = "select count(id) as nums,DATE_FORMAT(create_time,'%Y-%m') as time from blog group by DATE_FORMAT(create_time,'%Y-%m')"
             number,results = sqlconn.exec_sql_feach(sql)
             if results:
                 for i in results:
                     year,mouth = i['time'].split('-')
-                    i['flag'] = year + '年' + mouth + '月'
+                    i['flag'] = year + u'年' + mouth + u'月'
             else:
                 results = []
             re_data = {'status':0, 'msg':'', 'data':results}
@@ -499,11 +509,14 @@ class TimeGroupHandler(BaseHandler):
             sql += "where create_time like '%s%%' "
 
             sql = sql%(flag)
-            number,results = sqlconn.exec_sql_feach(sql)
+            totalnum = sqlconn.exec_sql(sql)
+            sql2 = sql + " limit %s,%s"%(pagesize,size)
+            number,results = sqlconn.exec_sql_feach(sql2)
             if results:
                 re_data = {'status':0, 'data':results}
             else:
                 re_data = {'status':1, 'msg':'asdf'}
+            re_data['total'] = totalnum if totalnum else 0
             self.write(re_data)
 
 
@@ -517,6 +530,7 @@ class MessageHandler(BaseHandler):
         total = self.get_argument('total', '')
 
         msgsql = "select id,content,status,create_time from message"
+        # 0 未读 1已读 2回收站 3 删除
         number,results = sqlconn.exec_sql_feach(msgsql)
 
         if results:
@@ -566,6 +580,7 @@ class ImgUploadHandler(BaseHandler):
         图片删除
         '''
         upload_path = os.path.join(os.path.dirname(__file__), 'upload')
+        #upload_path = "/home/niukaixin/www/html/static/img/"
         filename = self.get_argument('name', '')
         if not filename:
             return self.write({'status':1, 'msg':'没有参数'})
@@ -590,7 +605,20 @@ class DownloadHandler(BaseHandler):
 
 
 class CountView(BaseHandler):
+
     def get(self):
+        sql1 = 'select id as blogsums from blog'
+        sql2 = 'select id as msg from message'
+        sql3 = 'select sums from visitor where id=1'
+        r_data = {}
+        r_data['blogsums'] = sqlconn.exec_sql(sql1)
+        r_data['message'] = sqlconn.exec_sql(sql2)
+        number,results = sqlconn.exec_sql_feach(sql3)
+        r_data['views'] = results[0]['sums']
+        re_data = {'status':0, 'data':r_data}
+        self.write(re_data)
+
+    def post(self):
         index = self.get_argument('index', '')
         blogid = self.get_argument('id', '')
         if index:
@@ -600,6 +628,8 @@ class CountView(BaseHandler):
             status = sqlconn.exec_sql(sql,(now))
             if status:
                 print('自增')
+                sumsql = 'update visitor set sums=sums+1 where id=1'
+                sqlconn.exec_sql(sumsql)
                 sql2 = 'update visitor set sums=sums+1 where time=%s'
                 sqlconn.exec_sql(sql2,(now))
             else:
@@ -695,7 +725,7 @@ def main():
     except Exception as e:
         print(e)
     finally:
-        #monitor.LockFile(False)
+        #monitor.LockFile(False,LOCKFILE)
         print('清理结束')
         #stop_thread(st)
         stop_thread(tt)

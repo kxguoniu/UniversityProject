@@ -51,8 +51,30 @@
                 collapse: false,
                 fullscreen: false,
                 name: 'niukaixin',
-                message: 2
+                message: 0,
+                lists: []
             }
+        },
+        created(){
+            bus.$on('message', msg => {
+                this.message = msg
+            })
+            var url = this.HOST + 'message'
+            this.$axios({
+                method: 'get',
+                url: url
+            })
+            .then(res => {
+                if (res.data.status == 0) {
+                    this.lists = res.data.data
+                    this.message = this.datatwo(2).length
+                } else {
+                    console.log(res.data.msg)
+                }
+            })
+            .catch(error => {
+                console.log(error)
+            })
         },
         computed:{
             username(){
@@ -61,6 +83,14 @@
             }
         },
         methods:{
+            // 信息筛选
+            datatwo(val){
+                return this.lists.filter((d) => {
+                    if (d.status == val) {
+                        return d
+                    }
+                })
+            },
             // 用户名下拉菜单选择事件
             handleCommand(command) {
                 if(command == 'loginout'){

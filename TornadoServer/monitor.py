@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from mysqlpool import sqlconn
+import pymysql
 import time
+import os
 
 class Monitor:
 
-    def LockFile(val, lockpath):
+    def LockFile(self, val, lockpath):
         if val and not os.path.isfile(lockpath):
             #os.mknod(lockpath)
             with open(lockpath, 'w') as f:
@@ -12,7 +14,7 @@ class Monitor:
         elif not val and os.path.isfile(lockpath):
             os.remove(lockpath)
 
-    def skynet(lockpath):
+    def skynet(self, lockpath):
         print(lockpath)
         status = True
         netstatus = False

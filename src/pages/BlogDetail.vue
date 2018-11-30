@@ -61,7 +61,7 @@
                 if (this.GLOBAL.CountNum(this.blogid)){
                     var blogview = this.HOST + 'countview'
                     this.$axios({
-                        method: 'get',
+                        method: 'post',
                         url: blogview,
                         params: {
                             id: this.blogid

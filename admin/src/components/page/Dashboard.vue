@@ -18,11 +18,11 @@
                         <span>语言详情</span>
                     </div>
                     Vue
-                    <el-progress :percentage="71.3" color="#42b983"></el-progress>
+                    <el-progress :percentage="72.9" color="#42b983"></el-progress>
                     JavaScript
-                    <el-progress :percentage="24.1" color="#f1e05a"></el-progress>
+                    <el-progress :percentage="22.1" color="#f1e05a"></el-progress>
                     CSS
-                    <el-progress :percentage="3.7"></el-progress>
+                    <el-progress :percentage="4.1"></el-progress>
                     HTML
                     <el-progress :percentage="0.9" color="#f56c6c"></el-progress>
                 </el-card>
@@ -34,7 +34,7 @@
                             <div class="grid-content grid-con-1">
                                 <i class="el-icon-lx-people grid-con-icon"></i>
                                 <div class="grid-cont-right">
-                                    <div class="grid-num">1234</div>
+                                    <div class="grid-num">{{ views }}</div>
                                     <div>用户访问量</div>
                                 </div>
                             </div>
@@ -45,7 +45,7 @@
                             <div class="grid-content grid-con-2">
                                 <i class="el-icon-lx-notice grid-con-icon"></i>
                                 <div class="grid-cont-right">
-                                    <div class="grid-num">321</div>
+                                    <div class="grid-num">{{ message }}</div>
                                     <div>系统消息</div>
                                 </div>
                             </div>
@@ -56,7 +56,7 @@
                             <div class="grid-content grid-con-3">
                                 <i class="el-icon-lx-goods grid-con-icon"></i>
                                 <div class="grid-cont-right">
-                                    <div class="grid-num">5000</div>
+                                    <div class="grid-num">{{ blogsums }}</div>
                                     <div>数量</div>
                                 </div>
                             </div>
@@ -112,31 +112,36 @@
         data() {
             return {
                 name: localStorage.getItem('nkx_username'),
-                todoList: [{
-                        title: '今天要修复100个bug',
+                views: 0,
+                message: 0,
+                blogsums: 0,
+                todoList: [
+                    {
+                        title: '用户权限控制',
                         status: false,
                     },
                     {
-                        title: '今天要修复100个bug',
+                        title: '用户个人信息展示',
                         status: false,
                     },
                     {
-                        title: '今天要写100行代码加几个bug吧',
+                        title: '账户密码修改',
                         status: false,
                     }, {
-                        title: '今天要修复100个bug',
+                        title: '注册用户',
                         status: false,
                     },
                     {
-                        title: '今天要修复100个bug',
-                        status: true,
+                        title: '日志分析',
+                        status: false,
                     },
                     {
-                        title: '今天要写100行代码加几个bug吧',
+                        title: '让我再想想...',
                         status: true,
                     }
                 ],
-                data: [{
+                data: [
+                    {
                         name: '2018/09/04',
                         value: 1083
                     },
@@ -194,6 +199,7 @@
         created(){
             this.handleListener();
             this.changeDate();
+            this.sumcount();
         },
         activated(){
             this.handleListener();
@@ -203,6 +209,26 @@
             bus.$off('collapse', this.handleBus);
         },
         methods: {
+            // 修改时间
+            sumcount(){
+                var url = this.HOST + 'countview'
+                this.$axios({
+                    method: 'get',
+                    url: url
+                })
+                .then(res => {
+                    if (res.data.status == 0){
+                        this.views = res.data.data.views
+                        this.message = res.data.data.message
+                        this.blogsums = res.data.data.blogsums
+                    } else {
+                        this.$message.error(this.data.msg)
+                    }
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+            },
             changeDate(){
                 const now = new Date().getTime();
                 this.data.forEach((item, index) => {

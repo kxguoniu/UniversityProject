@@ -23,14 +23,26 @@
                 </div>
             </div>
             <!-- 底层页数导航 -->
-            <div class="pagination">
+            <div v-if="flash" key="1" class="pagination">
                 <el-pagination
                     background
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
                     :current-page="currentPage"
                     :page-sizes="[3, 5, 10, 15, 20, 50]"
-                    :page-size="10"
+                    :page-size="pagesize"
+                    layout="total, sizes, prev, pager, next, jumper"
+                    :total="total">
+                </el-pagination>
+            </div>
+            <div v-else key="2" class="pagination">
+                <el-pagination
+                    background
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange"
+                    :current-page="currentPage"
+                    :page-sizes="[3, 5, 10, 15, 20, 50]"
+                    :page-size="pagesize"
                     layout="total, sizes, prev, pager, next, jumper"
                     :total="total">
                 </el-pagination>
@@ -64,13 +76,16 @@
                 CategoryId:"",
                 TagId:"",
                 GroupId:"",
+                flash: false,
                 status: false,
                 currentPage: 1,
+                pagesize: 5,
                 listQuery: {
                     page: 1,
                     limit: 5
                 },
                 total: 0,
+                lasturl: "",
             }
         },
         mounted(){
@@ -106,6 +121,12 @@
                     var url = this.HOST + "category";
                     var flag = this.CategoryId
                 }
+                if (this.lasturl != url + flag) {
+                    this.flash = !this.flash
+                    this.lasturl = url + flag
+                    this.listQuery.limit = 5
+                    this.listQuery.page = 1
+                }
                 this.$axios.get(url, {
                     params:{
                         flag: flag,
@@ -114,10 +135,16 @@
                     }
                 })
                 .then(res => {
-                    this.blogs =  res.data.data;
-                    this.total = res.data.total;
-                    loading.close();
-                    this.status = true
+                    if (res.data.status == 0) {
+                        this.blogs =  res.data.data;
+                        this.total = res.data.total
+                        console.log(this.total)
+                        loading.close();
+                        this.status = true
+                    } else {
+                        this.$message.error(res.data.msg)
+                        loading.close()
+                    }
                 })
                 .catch(error => {
                     console.log(error);
@@ -131,6 +158,7 @@
                 this.listQuery.page = 1
                 this.GetBlog()
             },
+            // 改变页数
             handleCurrentChange(val){
                 this.listQuery.page = val
                 this.GetBlog()

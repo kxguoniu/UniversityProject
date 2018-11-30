@@ -22,7 +22,7 @@
                         </el-table-column>
                     </el-table>
                     <div class="handle-row">
-                        <el-button type="primary">全部标为已读</el-button>
+                        <el-button type="primary" @click="handleAll(0,0)">全部标为已读</el-button>
                     </div>
                 </el-tab-pane>
                 <el-tab-pane :label="`已读消息(${datatwo(1).length})`" name="second">
@@ -41,7 +41,7 @@
                             </el-table-column>
                         </el-table>
                         <div class="handle-row">
-                            <el-button type="danger">删除全部</el-button>
+                            <el-button type="danger" @click="handleAll(1,2)">删除全部</el-button>
                         </div>
                     </template>
                 </el-tab-pane>
@@ -61,7 +61,7 @@
                             </el-table-column>
                         </el-table>
                         <div class="handle-row">
-                            <el-button type="danger">清空回收站</el-button>
+                            <el-button type="danger" @click="handleAll(2,1)">清空回收站</el-button>
                         </div>
                     </template>
                 </el-tab-pane>
@@ -71,6 +71,7 @@
 </template>
 
 <script>
+    import bus from '../common/bus';
     export default {
         name: 'tabs',
         data() {
@@ -78,38 +79,14 @@
                 message: 'first',       // 点击改变选项卡
                 showHeader: false,
                 msglist: [],            // 信息列表
-                lists: [
-                    {
-                        id: 1,
-                        create_time: '2018-04-19 20:10:00',
-                        content: '【系统通知】该系统将于今晚凌晨2点到5点进行升级维护',
-                        status: 0,
-                    },
-                    {
-                        id: 2,
-                        date: '2018-04-19 21:20:00',
-                        title: '今晚12点整发大红包，先到先得',
-                        status: 1
-                    },
-                    {
-                        id: 3,
-                        date: '2018-04-19 20:30:00',
-                        title: '【系统通知】该系统将于今晚5点进行升级维护',
-                        status: 2
-                    },
-                    {
-                        id: 4,
-                        date: '2018-04-19 20:40:00',
-                        title: '【系统通知】该系统将于今晚凌晨2点到5点进行升级维护',
-                        status:0
-                    }
-                ]
+                lists: []
             }
         },
         created(){
             this.init()
         },
         methods: {
+            // 数据请求
             init(){
                 var url = this.HOST + 'message'
                 this.$axios({
@@ -128,6 +105,7 @@
                     console.log(error)
                 })
             },
+            // 信息修改
             submit(msgid,status){
                 var url = this.HOST + 'message'
                 this.$axios({
@@ -150,6 +128,7 @@
                     console.log(error)
                 })
             },
+            // 数据筛选
             datatwo(val){
                 return this.lists.filter((d) => {
                     if (d.status == val) {
@@ -157,6 +136,7 @@
                     }
                 })
             },
+            // 已读
             handleRead(val) {
                 for (let i = 0; i < this.lists.length; i++) {
                     if (val.id == this.lists[i].id) {
@@ -165,6 +145,7 @@
                 }
                 this.submit(val.id,1)
             },
+            // 删除
             handleDel(val) {
                 for (let i = 0; i < this.lists.length; i++) {
                     if (val.id == this.lists[i].id) {
@@ -172,7 +153,9 @@
                     }
                 }
                 this.submit(val.id,2)
+                bus.$emit('message', this.datatwo(2).length)
             },
+            // 回收
             handleRestore(val) {
                 for (let i = 0; i < this.lists.length; i++) {
                     if (val.id == this.lists[i].id) {
@@ -180,6 +163,22 @@
                     }
                 }
                 this.submit(val.id,1)
+                bus.$emit('message', this.datatwo(2).length)
+            },
+            // 全部操作
+            handleAll(start, end){
+                var dellist = this.datatwo(start)
+                for (let i = 0; i < this.lists.length; i++) {
+                    for (let j = 0; j < dellist.length; j++) {
+                        if (dellist[j].id == this.lists[i].id) {
+                            this.lists[i].status = end
+                        }
+                    }
+                }
+                dellist.filter((d) => {
+                    this.submit(d.id, end)
+                })
+                bus.$emit('message', this.datatwo(2).length)
             }
         },
         computed: {

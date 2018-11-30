@@ -13,7 +13,7 @@ import "babel-polyfill";
 Vue.use(ElementUI, { size: 'small' });
 Vue.prototype.$axios = axios;
 Vue.prototype.HOST = './local'
-//Vue.prototype.HOST = 'http://123.206.95.123:8080/'
+//Vue.prototype.HOST = 'http://123.206.95.123/'
 
 
 //使用钩子函数对路由进行权限跳转
