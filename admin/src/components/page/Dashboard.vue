@@ -10,7 +10,7 @@
                             <div>{{role}}</div>
                         </div>
                     </div>
-                    <div class="user-info-list">上次登录时间：<span>2018-01-01</span></div>
+                    <div class="user-info-list">上次登录时间：<span>{{ lasttime }}</span></div>
                     <div class="user-info-list">上次登录地点：<span>北京</span></div>
                 </el-card>
                 <el-card shadow="hover" style="height:252px;">
@@ -57,7 +57,7 @@
                                 <i class="el-icon-lx-goods grid-con-icon"></i>
                                 <div class="grid-cont-right">
                                     <div class="grid-num">{{ blogsums }}</div>
-                                    <div>数量</div>
+                                    <div>博文数量</div>
                                 </div>
                             </div>
                         </el-card>
@@ -115,6 +115,7 @@
                 views: 0,
                 message: 0,
                 blogsums: 0,
+                lasttime: '',
                 todoList: [
                     {
                         title: '用户权限控制',
@@ -209,7 +210,7 @@
             bus.$off('collapse', this.handleBus);
         },
         methods: {
-            // 修改时间
+            // 首页展示
             sumcount(){
                 var url = this.HOST + 'countview'
                 this.$axios({
@@ -221,6 +222,7 @@
                         this.views = res.data.data.views
                         this.message = res.data.data.message
                         this.blogsums = res.data.data.blogsums
+                        this.lasttime = res.data.data.time
                     } else {
                         this.$message.error(this.data.msg)
                     }
@@ -229,6 +231,7 @@
                     console.log(error)
                 })
             },
+            // 修改时间
             changeDate(){
                 const now = new Date().getTime();
                 this.data.forEach((item, index) => {

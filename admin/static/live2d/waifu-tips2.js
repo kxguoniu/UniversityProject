@@ -122,11 +122,12 @@ $.ajax({
 (function (){
     var text;
     var referrer = document.createElement('a');
+    // 如果是从其他页面跳转过来的，记录下上一页的地址
     if(document.referrer !== ''){
         referrer.href = document.referrer;
     }
-    
-    if(referrer.href !== '' && referrer.hostname != 'imjad.cn'){
+    // 如果是从其他页面跳转过来的并且 hostname 不是本站，不是从本站跳转过来的
+    if(referrer.href !== '' && referrer.hostname != '123.206.95.123'){
         var referrer = document.createElement('a');
         referrer.href = document.referrer;
         text = 'Hello! 来自 <span style="color:#0099cc;">' + referrer.hostname + '</span> 的朋友';
@@ -139,7 +140,9 @@ $.ajax({
             text = 'Hello! 来自 谷歌搜索 的朋友<br>欢迎阅读<span style="color:#0099cc;">『' + document.title.split(' - ')[0] + '』</span>';
         }
     }else {
-        if (window.location.href == 'https://imjad.cn/') { //如果是主页
+        // 拿到浏览器地址栏里的所有地址
+        // 如果是前端主页
+        if (window.location.href == 'http://123.206.95.123/#/categroay/1') { //如果是主页
             var now = (new Date()).getHours();
             if (now > 23 || now <= 5) {
                 text = '你是夜猫子呀？这么晚还不睡觉，明天起的来嘛';
@@ -161,7 +164,9 @@ $.ajax({
                 text = '嗨~ 快来逗我玩吧！';
             }
         }else {
-            $.getJSON('https://api.imjad.cn/interface/lastactivity/',function(result){
+            //$.getJSON('https://api.imjad.cn/interface/lastactivity/',function(result){
+            // 如果是进入后端首页
+            $.get('http://123.206.95.123/login?time=100', function(result){
                 var now = result.now;
                 var lastActivity = result.ts;
                 var idle = now - lastActivity;

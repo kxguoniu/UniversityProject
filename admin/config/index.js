@@ -17,6 +17,13 @@ module.exports = {
             pathRewrite:{
                 '^/local': ''
             }
+        },
+        "/server":{
+            target: "http://123.206.95.123/",
+            changeOrigin: true,
+            pathRewrite:{
+                '^/server': ""
+            }
         }
     },
     /*

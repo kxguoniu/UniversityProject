@@ -93,7 +93,15 @@ class LoginHandler(BaseHandler):
     登录
     '''
     def get(self):
-        self.render("login.html")
+        flag = self.get_argument('time', '')
+        if flag:
+            import time
+            now = int(time.time())
+            with open('admin.txt', 'r') as f:
+                ts = f.read()
+            return self.write({"ts":int(ts), "now":now})
+        else:
+            return self.render("login.html")
 
     def post(self):
         '''
@@ -107,6 +115,11 @@ class LoginHandler(BaseHandler):
 
         session_id = str(uuid.uuid1())
         dict_session[session_id] = user
+        if user == 'nkx':
+            import time
+            now = str(int(time.time()))
+            with open('admin.txt', 'w') as f:
+                f.write(now)
         self.set_secure_cookie("session_id", session_id)
         re_data = {'status':0, 'msg':'登录成功'}
         self.write(re_data)
@@ -389,8 +402,14 @@ class TagListHandler(BaseHandler):
 
 
 class DetailHandler(BaseHandler):
-
+    '''
+    博文详情
+    '''
     def get(self):
+        '''
+        Id: 博文id
+        jsons： 没有返回html，有返回原文
+        '''
         Id = self.get_argument("id",'')
         jsons = self.get_argument("json", '')
         if not jsons:
@@ -610,9 +629,13 @@ class CountView(BaseHandler):
         sql1 = 'select id as blogsums from blog'
         sql2 = 'select id as msg from message'
         sql3 = 'select sums from visitor where id=1'
+        with open('admin.txt', 'r') as f:
+            ls = f.read()
+        time = datetime.datetime.utcfromtimestamp(int(lt)).__str__()[:10]
         r_data = {}
         r_data['blogsums'] = sqlconn.exec_sql(sql1)
         r_data['message'] = sqlconn.exec_sql(sql2)
+        r_data['time'] = time
         number,results = sqlconn.exec_sql_feach(sql3)
         r_data['views'] = results[0]['sums']
         re_data = {'status':0, 'data':r_data}
@@ -646,6 +669,17 @@ class CountView(BaseHandler):
         self.write({'status':1, 'msg':'无效参数'})
 
 
+class SearchHandler(BaseHandler):
+    def get(self):
+        value = self.get_argument('title', -1)
+        if value != -1:
+            sql1 = "select id,title as value from blog where blog.title like '%%%s%%'"%(value)
+            number,results = sqlconn.exec_sql_feach(sql1)
+            return self.write({'status':0, 'data':results})
+        else:
+            return self.write({'status':1, 'msg':'请求错误'})
+
+
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
@@ -664,6 +698,7 @@ class Application(tornado.web.Application):
             (r'/imgupload', ImgUploadHandler),  #图片上传
             (r'/download', DownloadHandler),    #博文下载
             (r'/countview', CountView),         #访问计数
+            (r'/search', SearchHandler),        #搜索
         ]
         settings = dict(
             log_function=Custom,

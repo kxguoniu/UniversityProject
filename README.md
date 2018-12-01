@@ -8,10 +8,9 @@
 - CentOS6.8
 
 ## 前端功能介绍(补充中...)
-- [x] 导航条索引博文
-- [] 搜索条根据博文题目搜索
+- [x] 导航条索引
+- [x] 搜索条根据博文题目搜索
 - [x] 显示最新的几篇文章
-- [] 显示访问量最多的几篇博文
 - [x] 博文按时间分组展示
 - [x] 根据标签搜索博文
 - [x] 博文详情展示
@@ -42,20 +41,20 @@
 
 ## 前端页面展示
 ### 首页
-![](./html.png)
+![](./html.jpg)
 
 ### 博文展示页
-![](./html1.png)
+![](./html1.jpg)
 
 ## 后台管理页面展示
 ### 后台首页
-![](./html2.png)
+![](./html2.jpg)
 
 ### 博文编辑
-![](./html3.png)
+![](./html3.jpg)
 
 ### 博文列表
-![](./html4.png)
+![](./html4.jpg)
 
 ### 系统监控
 ![](./html5.png)
@@ -68,5 +67,6 @@
 
 [lin-xin](https://github.com/lin-xin/vue-manage-system)
 
+[猫与向日葵](https://imjad.cn/archives/lab/add-dynamic-poster-girl-with-live2d-to-your-blog-03)
 ## 尾
 ![](./float.png)
