@@ -402,7 +402,7 @@ class TagBlogHandler(BaseHandler):
         else:
             return self.finish({'status': 1, 'msg':'无效的查询参数' , 'data':''})
         
-        totalnum = sqlconn.exec_sql(sql,(flag))
+        totalnum = sqlconn.exec_sql(sql,(tag))
         sql += " limit %s,%s"
         number,results = sqlconn.exec_sql_feach(sql,(tag,pagesize,size))
         if number:
