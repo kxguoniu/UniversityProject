@@ -127,7 +127,7 @@ $.ajax({
         referrer.href = document.referrer;
     }
     // 如果是从其他页面跳转过来的并且 hostname 不是本站，不是从本站跳转过来的
-    if(referrer.href !== '' && referrer.hostname != '123.206.95.123'){
+    if(referrer.href !== '' && referrer.hostname != '52pyc.cn'){
         var referrer = document.createElement('a');
         referrer.href = document.referrer;
         text = 'Hello! 来自 <span style="color:#0099cc;">' + referrer.hostname + '</span> 的朋友';
@@ -142,7 +142,7 @@ $.ajax({
     }else {
         // 拿到浏览器地址栏里的所有地址
         // 如果是前端主页
-        if (window.location.href == 'http://123.206.95.123/#/categroay/1') { //如果是主页
+        if (window.location.href == 'http://www.52pyc.cn/#/categroay/1' || window.location.href == 'http://52pyc.cn/#/categroay/1') { //如果是主页
             var now = (new Date()).getHours();
             if (now > 23 || now <= 5) {
                 text = '你是夜猫子呀？这么晚还不睡觉，明天起的来嘛';
@@ -166,7 +166,7 @@ $.ajax({
         }else {
             //$.getJSON('https://api.imjad.cn/interface/lastactivity/',function(result){
             // 如果是进入后端首页
-            $.get('http://123.206.95.123/login?time=100', function(result){
+            $.get('/login?time=100', function(result){
                 var now = result.now;
                 var lastActivity = result.ts;
                 var idle = now - lastActivity;

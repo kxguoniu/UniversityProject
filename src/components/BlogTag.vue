@@ -13,7 +13,7 @@
 
 <script type="text/javascript">
     export default{
-        name:"",
+        name:"Tag",
         data(){
             return{
                 tags:[],

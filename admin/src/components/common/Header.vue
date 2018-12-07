@@ -100,6 +100,8 @@
                         url: url
                     })
                     .then(res => {
+                        localStorage.removeItem("nkx_username")
+                        console.log(localStorage)
                         if (res.data.status == 0) {
                             this.$message.success(res.data.msg)
                         } else {

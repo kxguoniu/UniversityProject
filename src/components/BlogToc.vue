@@ -1,9 +1,9 @@
 <template lang="html">
-    <div class="body-right">
-    <div id="TocBar" :class="{'blogtoc':true, 'right-bind':status}">
-        <p><strong class="toc-title">文章目录</strong></p>
-        <div class="entity" v-html="toc"></div>
-    </div>
+    <div id = "TocRight" class="body-right">
+        <div id="TocBar" :class="{'blogtoc':true, 'right-bind':status}">
+            <p><strong class="toc-title">文章目录</strong></p>
+            <div class="entity" v-html="toc"></div>
+        </div>
     </div>
 </template>
 
@@ -18,37 +18,43 @@
         },
         data(){
             return{
-                status: false
+                status: true
             }
         },
         mounted(){
-            window.addEventListener('scroll', this.handleScroll)
+            //window.addEventListener('scroll', this.handleScroll)
         },
         methods:{
             handleScroll(){
+                console.log(this.status)
                 var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
                 var offsetTop = document.querySelector('#TocBar').offsetTop
+                console.log(scrollTop,offsetTop)
                 if (scrollTop > offsetTop) {
                     this.status = true
+                    console.log(this.status)
                 } else {
                     this.status = false
+                    console.log(this.status)
                 }
             }
         },
         destroyed(){
-            window.removeEventListener('scroll', this.handleScroll)
+            //window.removeEventListener('scroll', this.handleScroll)
         }
     }
 </script>
 
 <style type="text/css">
     .body-right{
+        margin-top: 80;
+        overflow-y:scroll;
         float: right;
         width: 31%;
     }
     .right-bind{
         position: fixed;
-        top: 60px;
+        top: 80px;
         width: 29%;
     }
     .blogtoc{

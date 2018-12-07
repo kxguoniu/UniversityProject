@@ -60,6 +60,11 @@ def Custom(handler):
 
 
 class BaseHandler(tornado.web.RequestHandler):
+    #def __init__(self, *args, **kwargs):
+    #    super().__init__(*args, **kwargs)
+
+        
+
     def get_current_user(self):
         session_id = self.get_secure_cookie("session_id")
         if session_id:
@@ -93,6 +98,8 @@ class LoginHandler(BaseHandler):
     登录
     '''
     def get(self):
+        a = self.xsrf_token
+        print(a)
         flag = self.get_argument('time', '')
         if flag:
             import time
@@ -112,17 +119,40 @@ class LoginHandler(BaseHandler):
         body = json.loads(self.request.body)
         user = body['username']
         pwd = body['password']
-
-        session_id = str(uuid.uuid1())
-        dict_session[session_id] = user
+        
         if user == 'nkx':
             import time
             now = str(int(time.time()))
             with open('admin.txt', 'w') as f:
                 f.write(now)
-        self.set_secure_cookie("session_id", session_id)
-        re_data = {'status':0, 'msg':'登录成功'}
+        usersql = "select name,img from author where name=%s and passwd=%s"
+        status,results = sqlconn.exec_sql_feach(usersql,(user,pwd))
+        if status:
+            results = results[0]
+            session_id = str(uuid.uuid1())
+            dict_session[session_id] = {'user':results['name'], 'img':results['img']}
+            self.set_secure_cookie("session_id", session_id)
+            re_data = {'status':0, 'msg':'登录成功'}
+        else:
+            re_data = {'status':1, 'msg':'账号或密码错误'}
         self.write(re_data)
+
+
+    def put(self):
+        '''
+        注册用户
+        '''
+        body = json.loads(self.request.body)
+        user = body['user']
+        pwd = body['passwd']
+        pwd2 = body['passwd2']
+        search = sqlconn.exec_sql('select id from author where name=%s', (user))
+        if search:
+            return self.write({'status':1, 'msg':'用户已存在'})
+        else:
+            regisql = "insert into author (name,img,passwd) values (%s,%s,%s)"
+            sqlconn.exec_sql(regisql,(user,"/static/img/img.jpg",pwd))
+            return self.write({'status':0, 'msg':'注册成功'})
 
 
 class LogoutHandler(BaseHandler):
@@ -232,7 +262,7 @@ class CateGoryHandler(BaseHandler):
         :weight   权重
         :blogid   博文id
         '''
-        if self.current_user != 'nkx':
+        if self.current_user['user'] != 'nkx':
             return self.write({'status':1, 'msg':'WARRING!  权限不足'})
         flag = self.get_argument('flag','')
         if flag == 'body':
@@ -278,7 +308,7 @@ class CateGoryHandler(BaseHandler):
         '''
         新建博文
         '''
-        if self.current_user != 'nkx':
+        if self.current_user['user'] != 'nkx':
             return self.write({'status':1, 'msg':'WARRING!  权限不足'})
 
         body = self.request.body
@@ -324,7 +354,7 @@ class CateGoryHandler(BaseHandler):
         :blogid  博文id/单点删除
         :listid  博文id列表/批量删除
         '''
-        if self.current_user != 'nkx':
+        if self.current_user['user'] != 'nkx':
             return self.write({'status':1, 'msg':'WARRING!  权限不足'})
         blogid = self.get_argument('id',-1)
         listid = self.get_argument('id', {})
@@ -631,7 +661,7 @@ class CountView(BaseHandler):
         sql3 = 'select sums from visitor where id=1'
         with open('admin.txt', 'r') as f:
             ls = f.read()
-        time = datetime.datetime.utcfromtimestamp(int(lt)).__str__()[:10]
+        time = datetime.datetime.utcfromtimestamp(int(ls)).__str__()[:10]
         r_data = {}
         r_data['blogsums'] = sqlconn.exec_sql(sql1)
         r_data['message'] = sqlconn.exec_sql(sql2)
@@ -680,6 +710,78 @@ class SearchHandler(BaseHandler):
             return self.write({'status':1, 'msg':'请求错误'})
 
 
+class CommentHandler(BaseHandler):
+    '''
+    评论
+    '''
+    def get(self):
+        blogid = self.get_argument('id', -1)
+        if blogid == -1:
+            return self.write({'status':1, 'msg':'请求错误'})
+        commsql = "select id,img,user,message,create_time,floor from comment where blog_id=%s order by floor desc"
+        commnum,results = sqlconn.exec_sql_feach(commsql,(blogid))
+        results = self._time(results)
+        for result in results:
+            result['show'] = False
+            result['look'] = '查看'
+            print(type(result['create_time']))
+            replysql = "select id,img,user,message,create_time from reply where comment_id=%s"
+            replynum,reply = sqlconn.exec_sql_feach(replysql,(result['id']))
+            result['children'] = self._time(reply)
+        self.write({'status':0, 'data':results})
+
+    def _time(self, objs):
+        now = datetime.datetime.now()
+        for obj in objs:
+            time = (now - obj['create_time']).seconds
+            if time//60 == 0:
+                obj['create_time'] = '%s秒前'%(time)
+            elif time//3600 == 0:
+                obj['create_time'] = '%s分钟前'%(time//60)
+            elif time//86400 == 0:
+                obj['create_time'] = '%s小时前'%(time//3600)
+            else:
+                obj['create_time'] = '%s天前'%(time//86400)
+        return objs
+
+    #@tornado.web.authenticated
+    def post(self):
+        body = json.loads(self.request.body)
+        user = self.current_user['user']
+        img = self.current_user['img']
+        blogid = body['blogid']
+        status = body['status']
+        message = body['message']
+        replyid = body['replyid']
+        replyuser = body['replyuser']
+
+        print(user,message,replyid,img,replyuser)
+        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        try:
+            if message.split('\n')[0].split('@')[1]:
+                replyblog = False
+                message = '\n'.join(message.split('\n')[1:])
+        except:
+            replyblog = True
+        if status == 0 or replyblog:
+            floorsql = "select max(floor) as sum from comment where blog_id=%s"
+            sums,results = sqlconn.exec_sql_feach(floorsql,(blogid))
+            if sums:
+                if results[0]['sum']:
+                    floor = results[0]['sum'] + 1
+                else:
+                    floor = 1
+            commsql = "insert into comment (user,message,create_time,floor,blog_id,img) values (%s,%s,%s,%s,%s,%s)"
+            number = sqlconn.exec_sql(commsql,(user,message,now,floor,blogid,img))
+        if status >= 1 and not replyblog:
+            commsql = "insert into reply (user,message,create_time,comment_id,img,replyuser) values (%s,%s,%s,%s,%s,%s)"
+            number = sqlconn.exec_sql(commsql,(user,message,now,replyid,img,replyuser))
+            if number:
+                return self.write({'status':0, 'msg':'回复成功'})
+            else:
+                return self.write({'status':1, 'msg':'回复失败'})
+
+
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
@@ -699,12 +801,14 @@ class Application(tornado.web.Application):
             (r'/download', DownloadHandler),    #博文下载
             (r'/countview', CountView),         #访问计数
             (r'/search', SearchHandler),        #搜索
+            (r'/comment', CommentHandler),      #评论
         ]
         settings = dict(
             log_function=Custom,
             debug=True,     #调试模式
             cookie_secret="SECRET_DONT_LEAK",
             login_url="/login",
+            #xsrf_cookies=True,
         )
         super(Application, self).__init__(handlers, **settings)
 

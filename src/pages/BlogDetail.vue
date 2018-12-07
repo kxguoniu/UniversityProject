@@ -13,7 +13,10 @@
                     <span>&nbsp;{{ detail.create_time }}&nbsp;</span>
                     <span>&nbsp;{{ detail.views }} 阅读&nbsp;</span>
                 </div>
-                <div class="entry-content" v-html="detail.html"><span class=""></span></div>
+                <div class="entry-content" v-html="detail.html"></div>
+            </div>
+            <div style="height: 100%">
+                <Comment :blogid="blogid"></Comment>
             </div>
         </div>
         <BlogToc :toc="toc"></BlogToc>
@@ -22,10 +25,12 @@
 
 <script type="text/javascript">
     import BlogToc from '../components/BlogToc'
+    import Comment from '../components/Comment'
     export default{
         name:"blogdetail",
         components:{
             BlogToc,
+            Comment,
         },
         data(){
             return{
@@ -109,6 +114,7 @@
     .html-body{
         margin: 0 3%;
         padding: 0 1%;
+        margin-top: 80px;
     }
     .body-left{
         float: left;
@@ -149,15 +155,14 @@
         font-weight: 300;
         padding-left: 20px;
         color: #000;
-
         word-wrap:break-word;
         word-break:break-all;
         overflow: hidden;
-
     }
     .entry-content a{
         text-decoration:none;
     }
+.entry-content p{text-indent:2em;}
 
 
 /* CODE

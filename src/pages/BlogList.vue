@@ -171,6 +171,7 @@
     .html-body{
         margin: 0 3%;
         padding: 0 1%;
+        margin-top: 80px;
     }
     .body-right{
         float: right;

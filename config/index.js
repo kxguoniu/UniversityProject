@@ -17,6 +17,13 @@ module.exports = {
             pathRewrite:{
                 '^/local': ''
             }
+        },
+        "/server":{
+            target: "http://www.52pyc.cn/",
+            changeOrigin: true,
+            pathRewrite:{
+                '^/server': ""
+            }
         }
     },
 

@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import App from './App';
 import router from './router';
-import axios from 'axios';
+import Axios from 'axios';
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';    // 默认主题
 // import '../static/css/theme-green/index.css';       // 浅绿色主题
@@ -11,11 +11,42 @@ import "babel-polyfill";
 
 
 Vue.use(ElementUI, { size: 'small' });
-Vue.prototype.$axios = axios;
-//Vue.prototype.HOST = './local'
+Vue.prototype.$axios = Axios;
+Vue.prototype.HOST = './local'
 //Vue.prototype.HOST = './server'
-Vue.prototype.HOST = 'http://123.206.95.123/'
+//Vue.prototype.HOST = '/'
 
+
+// 添加请求拦截器
+Axios.interceptors.request.use(function(config){
+    // 在发送之前做些什么
+    if(config.method === "post" || config.method === "put" || config.method === "delete"){
+        var pattern = /(.+; *)?_xsrf *= *([^;" ]+)/;
+        var xsrf = pattern.exec(document.cookie)
+        if (xsrf) {
+            config.headers['X-Xsrftoken'] = xsrf[2]
+        }
+    }
+    console.log('cookie',document.cookie)
+    return config;
+}, function(error) {
+    // 对请求错误做些什么
+    return Promise.reject(error)
+});
+
+/*
+// 添加响应拦截器
+Axios.interceptors.response.use(function(response){
+    // 对相应数据做些什么
+    if(response.status !== 200){
+        return response
+    }
+    return response
+}, function(error){
+    // 对相应错误做些什么
+    return Promise.reject(error);
+});
+*/
 
 //使用钩子函数对路由进行权限跳转
 /*

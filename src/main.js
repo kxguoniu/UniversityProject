@@ -13,11 +13,30 @@ import _global from './Global'
 
 Vue.config.productionTip = false
 Vue.prototype.$axios  = Axios
-//Vue.prototype.HOST = './local'
+Vue.prototype.HOST = './local'
+//Vue.prototype.HOST = './server'
 Vue.prototype.GLOBAL = _global
-Vue.prototype.HOST = 'http://123.206.95.123/'
-
+//Vue.prototype.HOST = '/'
 Vue.use(ElementUI)
+
+
+// 添加请求拦截器
+Axios.interceptors.request.use(function(config){
+    // 在发送之前做些什么
+    if(config.method === "post" || config.method === "put" || config.method === "delete"){
+        var pattern = /(.+; *)?_xsrf *= *([^;" ]+)/;
+        var xsrf = pattern.exec(document.cookie)
+        if (xsrf) {
+            config.headers['X-Xsrftoken'] = xsrf[2]
+        }
+    }
+    console.log('cookie',document.cookie)
+    return config;
+}, function(error) {
+    // 对请求错误做些什么
+    return Promise.reject(error)
+});
+
 
 
 /* eslint-disable no-new */

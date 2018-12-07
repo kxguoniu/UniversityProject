@@ -30,7 +30,12 @@
                 </el-menu>
             </div>
             <div class="heade2">
-                <a href="http://123.206.95.123/login">
+                <!--
+                <a href="http://www.52pyc.cn/login">
+                    后台管理
+                </a>
+                -->
+                <a href="http://127.0.0.1:8081/login">
                     后台管理
                 </a>
             </div>
@@ -56,11 +61,11 @@
                     {'id':7, 'name':'生活'},
                     {'id':8, 'name':'资源分享'},
                 ],
-                status: false
+                status: true
             }
         },
         mounted(){
-            window.addEventListener('scroll', this.handleScroll)
+            //window.addEventListener('scroll', this.handleScroll)
         },
         created(){
             if (this.GLOBAL.INDEX == 0){
@@ -108,7 +113,7 @@
             }
         },
         destroyed(){
-            window.removeEventListener('scroll', this.handleScroll)
+            //window.removeEventListener('scroll', this.handleScroll)
         }
     }
 </script>
@@ -136,6 +141,7 @@
         margin-bottom: 20px;
         width: 79%;
         padding-left: 5%;
+        height: 60px;
         z-index: 999;
         float: left;
     }
