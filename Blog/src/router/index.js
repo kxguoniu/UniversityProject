@@ -12,6 +12,15 @@ import Monitor from '@/components/page/monitor.vue'
 import Create from '@/components/page/Create.vue'
 import Edit from '@/components/page/Edit.vue'
 import Login from '@/components/page/Login.vue'
+import Line from '@/components/page/Line.vue'
+import Icon from '@/components/page/Icon.vue'
+import Form from '@/components/page/BaseForm.vue'
+import Upload from '@/components/page/Upload.vue'
+import Charts from '@/components/page/BaseCharts.vue'
+import Drag from '@/components/page/DragList.vue'
+import Permission from '@/components/page/Permission.vue'
+import NotFount from '@/components/page/404.vue'
+import Errors from '@/components/page/403.vue'
 
 Vue.use(Router)
 
@@ -84,7 +93,65 @@ export default new Router({
                     component: Edit,
                     meta: { title: '编辑博文', needlogin: true }
                 },
+                {
+                    path: '/admin/line',
+                    name: 'Line',
+                    component: Line,
+                    meta: { title: 'line' }
+                },
+                {
+                    path: '/admin/icon',
+                    name: 'Icon',
+                    component: Icon,
+                    meta: { title: '自定义图标' }
+                },
+                {
+                    path: '/admin/form',
+                    name: 'Form',
+                    component: Form,
+                    meta: { title: '基本表单' }
+                },
+                {
+                    path: '/admin/upload',
+                    name: 'Upload',
+                    component: Upload,
+                    meta: { title: '文件上传' }
+                },
+                {
+                    path: '/admin/charts',
+                    name: 'Charts',
+                    component: Charts,
+                    meta: { title: 'schart图表' }
+                },
+                {
+                    path: '/admin/drag',
+                    name: 'Drag',
+                    component: Drag,
+                    meta: { title: '拖拽列表' }
+                },
+                {
+                    path: '/admin/permission',
+                    name: 'Permission',
+                    component: Permission,
+                    meta: { title: '权限测试', permission: true }
+                },
+                {
+                    path: '/admin/404',
+                    name: 'NotFount',
+                    component: NotFount,
+                    meta: { title: '404' }
+                },
+                {
+                    path: '/admin/403',
+                    name: 'Errors',
+                    component: Errors,
+                    meta: { title: '403' }
+                }
             ]
+        },
+        {
+            path: '*',
+            redirect: '/admin/404'
         }
     ]
 })

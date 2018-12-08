@@ -41,6 +41,7 @@
             }
         },
         mounted(){
+            //window.addEventListener('scroll', this.scrollToTop)
             this.blogid = this.$route.params.id
             this.ShowDetail()
         },
@@ -50,7 +51,15 @@
                 this.ShowDetail()
             }
         },
+        destroyed(){
+            //window.removeEventListener('scroll', this.scrollToTop)
+        },
         methods:{
+            scrollToTop(){
+                var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
+                console.log(scrollTop)
+            },
+            // 获取博文内容
             ShowDetail(){
                 //加载
                 const loading = this.$loading({
@@ -153,7 +162,7 @@
         font-size: 14px;
         line-height: 1.5;
         font-weight: 300;
-        padding-left: 20px;
+        padding: 0 20px;
         color: #000;
         word-wrap:break-word;
         word-break:break-all;

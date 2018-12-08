@@ -63,7 +63,7 @@
                         index: '/admin/message',
                         title: '系统消息'
                     },
-                    /*
+                    
                     {
                         icon: 'el-icon-lx-calendar',
                         index: '3',
@@ -118,7 +118,7 @@
                                 title: '404页面'
                             }
                         ]
-                    }*/
+                    }
                 ]
             }
         },

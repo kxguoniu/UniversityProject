@@ -258,7 +258,7 @@ class CateGoryHandler(BaseHandler):
         博文修改
         :flag   修改类型
         :title  标题
-        :category 标签
+        :category 分类
         :weight   权重
         :blogid   博文id
         '''
@@ -308,8 +308,9 @@ class CateGoryHandler(BaseHandler):
         '''
         新建博文
         '''
-        if self.current_user['user'] != 'nkx':
-            return self.write({'status':1, 'msg':'WARRING!  权限不足'})
+        author = self.current_user['user']
+        #if author != 'nkx':
+            #return self.write({'status':1, 'msg':'WARRING!  权限不足'})
 
         body = self.request.body
         body = json.loads(body)
@@ -321,7 +322,7 @@ class CateGoryHandler(BaseHandler):
             category_id = results[0]['id']
             print('category_id',type(category_id))
         authorsql = "select id from author where author.name=%s"
-        number,results = sqlconn.exec_sql_feach(authorsql,(body['author']))
+        number,results = sqlconn.exec_sql_feach(authorsql,(author))
         if number:
             author_id = results[0]['id']
             print('author_id',type(author_id))
@@ -621,7 +622,7 @@ class ImgUploadHandler(BaseHandler):
             with open(filepath, 'wb') as f:
                 f.write(file['body'])
 
-        re_data = {'status':0, 'data':'http://123.206.95.123:8080/static/img/'+filename}
+        re_data = {'status':0, 'data':'http://52pyc.cn/static/img/'+filename}
         self.write(re_data)
 
     def delete(self):
@@ -842,7 +843,7 @@ def LoopConn(val):
             print('检测成功',number)
         else:
             print('检测失败',number)
-        time.sleep(600)
+        time.sleep(60)
 
 
 def main():
@@ -859,7 +860,7 @@ def main():
         tt.start()
         #app.listen(options.port)
         [i.setFormatter(LogFormatter()) for i in logging.getLogger().handlers]
-        app.listen(80)
+        app.listen(8888)
         tornado.ioloop.IOLoop.current().start()
     except Exception as e:
         print(e)

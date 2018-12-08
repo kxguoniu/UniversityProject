@@ -1,8 +1,5 @@
 <template>
     <div>
-        <div>
-            <button @click="csrf">csrf</button>
-        </div>
         <div id="reply" class="reply-input">
             <el-input type="textarea" :autosize="{ minRows:2, maxRows:5}" placeholder="说点什么吧..." v-model="reply" maxlength="20" @focus="changebutton" @blur="changebutton"></el-input>
             <div class="reply-button" v-if="button && !login">

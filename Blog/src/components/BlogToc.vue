@@ -4,6 +4,9 @@
             <p><strong class="toc-title">文章目录</strong></p>
             <div class="entity" v-html="toc"></div>
         </div>
+        <div v-if="back" class="break">
+            <i class="icon" @click="reback"></i>
+        </div>
     </div>
 </template>
 
@@ -18,13 +21,34 @@
         },
         data(){
             return{
-                status: true
+                status: true,
+                back: false,
             }
         },
         mounted(){
-            //window.addEventListener('scroll', this.handleScroll)
+            window.addEventListener('scroll', this.scrolTop)
         },
         methods:{
+            scrolTop(){
+                var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
+                if (scrollTop > 500){
+                    this.back = true
+                } else {
+                    this.back = false
+                }
+            },
+            reback(){
+                var height = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
+                let step = Math.floor(height / 25)
+                console.log(step);
+                (function jump(){
+                    if (height > 0){
+                        height -= step
+                        window.scrollTo(0,height)
+                        setTimeout(jump, 10)
+                    }
+                })()
+            },
             handleScroll(){
                 console.log(this.status)
                 var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
@@ -40,12 +64,45 @@
             }
         },
         destroyed(){
-            //window.removeEventListener('scroll', this.handleScroll)
+            window.removeEventListener('scroll', this.scrolTop)
         }
     }
 </script>
 
 <style type="text/css">
+    .break{
+        background-color: #f9f9f9;
+        position: fixed;
+        right: 30px;
+        bottom: 40px;
+        width: 40px;
+        height: 40px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: .3s;
+        box-shadow: 0 0 6px rgba(0,0,0,.12);
+        z-index: 10000;
+    }
+    .break i{
+        color: #883e33;
+        display: block;
+        line-height: 40px;
+        text-align: center;
+        font-size: 25px;
+    }
+    .icon{
+        font-family: element-icons!important;
+        speak: none;
+        font-style: normal;
+        font-weight: 400;
+        font-variant: normal;
+        text-transform: none;
+        vertical-align: baseline;
+        -webkit-font-smoothing: antialiased;
+    }
+    .icon:before{
+        content: "\E60C"
+    }
     .body-right{
         margin-top: 80;
         overflow-y:scroll;

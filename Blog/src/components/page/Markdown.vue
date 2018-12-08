@@ -19,7 +19,7 @@
                                 <el-row>
                                     <el-col :span="8">
                                         <el-form-item label-width="45px" label="作者:" class="postInfo-container-item">
-                                            <el-input placeholder="请输入内容" v-model="postForm.author" :disabled="true" class="inputadmin">
+                                            <el-input placeholder="请输入内容" v-model="author" :disabled="true" class="inputadmin">
                                             </el-input>
                                         </el-form-item>
                                     </el-col>
@@ -94,12 +94,12 @@
     import 'mavon-editor/dist/css/index.css'
     import MDinput from '../common/MDinput'
     const defaultForm = {
-        title: '测试博客12', // 文章题目
-        author: 'admin', // 作者
+        title: '创建博客', // 文章题目
+        author: '', // 作者
         category: '', // 分类
         taglist: [], //标签
         weight: 1, //重要性
-        body: '## nihao', // 文章内容
+        body: '## 你好啊', // 文章内容
         html: '', // 文章解析内容
         digested: '你好啊,这里是小牛运维站', // 文章摘要
         create_time: '', // 发布时间
@@ -126,6 +126,7 @@
                     title: [{ validator: validateRequire }],
                     create_time: [{ validator: validateRequire }]
                 },
+                author: localStorage.getItem('nkx_username'),
             }
         },
         props:{

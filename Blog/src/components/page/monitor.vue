@@ -34,6 +34,7 @@
                 width: '100%',
                 loading: true,
                 sort: true,
+                timer: null,
             }
         },
         components: { keyboard, lineMarker, mixChart, Load },
@@ -74,8 +75,12 @@
                 })
             },
             Loop(){
-                setInterval(this.init, 60000)
+                this.timer = setInterval(this.init, 60000)
             }
+        },
+        beforeDestroy(){
+            clearInterval(this.timer)
+            this.timer = null
         },
     }
 </script>

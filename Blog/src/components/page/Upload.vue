@@ -32,7 +32,6 @@
                     <input class="crop-input" type="file" name="image" accept="image/*" @change="setImage"/>
                 </div>
             </div>
-        
             <el-dialog title="裁剪图片" :visible.sync="dialogVisible" width="30%">
                 <vue-cropper ref='cropper' :src="imgSrc" :ready="cropImage" :zoom="cropImage" :cropmove="cropImage" style="width:100%;height:300px;"></vue-cropper>
                 <span slot="footer" class="dialog-footer">
