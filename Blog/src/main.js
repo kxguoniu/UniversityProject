@@ -16,7 +16,9 @@ import '../static/css/icon.css'
 
 Vue.config.productionTip = false
 Vue.prototype.$axios  = Axios
-Vue.prototype.HOST = './local'
+//Vue.prototype.HOST = './local'
+Vue.prototype.HOST = './server'
+//Vue.prototype.HOST = '/'
 Vue.prototype.GLOBAL = _global
 Vue.use(ElementUI, { size: 'small' })
 

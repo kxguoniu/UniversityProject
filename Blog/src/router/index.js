@@ -1,28 +1,19 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Index from '@/pages/index'
-import BlogList from '@/pages/BlogList'
-import BlogDetail from '@/pages/BlogDetail'
-
-import Home from '@/components/common/Home.vue'
-import Dashboard from '@/components/page/Dashboard.vue'
-import BaseTable from '@/components/page/BaseTable.vue'
-import Tabs from '@/components/page/Tabs.vue'
-import Monitor from '@/components/page/monitor.vue'
-import Create from '@/components/page/Create.vue'
-import Edit from '@/components/page/Edit.vue'
-import Login from '@/components/page/Login.vue'
-import Line from '@/components/page/Line.vue'
-import Icon from '@/components/page/Icon.vue'
-import Form from '@/components/page/BaseForm.vue'
-import Upload from '@/components/page/Upload.vue'
-import Charts from '@/components/page/BaseCharts.vue'
-import Drag from '@/components/page/DragList.vue'
-import Permission from '@/components/page/Permission.vue'
-import NotFount from '@/components/page/404.vue'
-import Errors from '@/components/page/403.vue'
 
 Vue.use(Router)
+
+function loadIndex(view){
+    return () => import(/* webpackChunkName: "view-[request]" */ `@/pages/${view}.vue`)
+}
+
+function loadHome(view){
+    return () => import(/* webpackChunkName: "view-[request]" */ `@/components/common/${view}.vue`)
+}
+
+function loadview(view){
+    return () => import(/* webpackChunkName: "view-[request]" */ `@/components/page/${view}.vue`)
+}
 
 export default new Router({
     //mode: 'history',
@@ -31,127 +22,127 @@ export default new Router({
         {
             path: '/',
             name: 'Index',
-            component: Index,
+            component: loadIndex('Index'),
             redirect: "/categroay/1",
             children:[
                 {
                     path: '/categroay/:id',
                     name: 'BlogList',
-                    component: BlogList
+                    component: loadIndex('BlogList')
                 },
                 {
                     path: '/blogdetail/:id',
                     name: 'BlogDetail',
-                    component: BlogDetail
+                    component: loadIndex('BlogDetail')
                 },
             ]
         },
         {
             path: '/login',
             name: 'Login',
-            component: Login,
+            component: loadview('Login'),
         },
         {
             path: '/admin',
             name: 'Admin',
-            component: Home,
-            redirect: "/admin/dashboard",
+            component: loadHome('Home'),
+            redirect: "/dashboard",
             children:[
                 {
-                    path: '/admin/dashboard',
+                    path: '/dashboard',
                     name: 'Dashboard',
-                    component: Dashboard,
+                    component: loadview('Dashboard'),
                     meta: { title: '系统首页', needlogin: true }
                 },
                 {
-                    path: '/admin/table',
+                    path: '/table',
                     name: 'BaseTable',
-                    component: BaseTable,
+                    component: loadview('BaseTable'),
                     meta: { title: '博文列表', needlogin: true }
                 },
                 {
-                    path: '/admin/message',
+                    path: '/message',
                     name: 'Tabs',
-                    component: Tabs,
+                    component: loadview('Tabs'),
                     meta: { title: '系统消息', needlogin: true }
                 },
                 {
-                    path: '/admin/monitor',
+                    path: '/monitor',
                     name: 'Monitor',
-                    component: Monitor,
+                    component: loadview('Monitor'),
                     meta: { title: 'monitor', needlogin: true }
                 },
                 {
-                    path: '/admin/markdown',
+                    path: '/markdown',
                     name: 'Create',
-                    component: Create,
+                    component: loadview('Create'),
                     meta: { title: '创作博文', needlogin: true }
                 },
                 {
-                    path: '/admin/edit/:id',
+                    path: '/edit/:id',
                     name: 'Edit',
-                    component: Edit,
+                    component: loadview('Edit'),
                     meta: { title: '编辑博文', needlogin: true }
                 },
                 {
-                    path: '/admin/line',
+                    path: '/line',
                     name: 'Line',
-                    component: Line,
+                    component: loadview('Line'),
                     meta: { title: 'line' }
                 },
                 {
-                    path: '/admin/icon',
+                    path: '/icon',
                     name: 'Icon',
-                    component: Icon,
+                    component: loadview('Icon'),
                     meta: { title: '自定义图标' }
                 },
                 {
-                    path: '/admin/form',
+                    path: '/form',
                     name: 'Form',
-                    component: Form,
+                    component: loadview('BaseForm'),
                     meta: { title: '基本表单' }
                 },
                 {
-                    path: '/admin/upload',
+                    path: '/upload',
                     name: 'Upload',
-                    component: Upload,
+                    component: loadview('Upload'),
                     meta: { title: '文件上传' }
                 },
                 {
-                    path: '/admin/charts',
+                    path: '/charts',
                     name: 'Charts',
-                    component: Charts,
+                    component: loadview('BaseCharts'),
                     meta: { title: 'schart图表' }
                 },
                 {
-                    path: '/admin/drag',
+                    path: '/drag',
                     name: 'Drag',
-                    component: Drag,
+                    component: loadview('DragList'),
                     meta: { title: '拖拽列表' }
                 },
                 {
-                    path: '/admin/permission',
+                    path: '/permission',
                     name: 'Permission',
-                    component: Permission,
+                    component: loadview('Permission'),
                     meta: { title: '权限测试', permission: true }
                 },
                 {
-                    path: '/admin/404',
+                    path: '/404',
                     name: 'NotFount',
-                    component: NotFount,
+                    component: loadview('404'),
                     meta: { title: '404' }
                 },
                 {
-                    path: '/admin/403',
+                    path: '/403',
                     name: 'Errors',
-                    component: Errors,
+                    component: loadview('403'),
                     meta: { title: '403' }
                 }
             ]
         },
         {
             path: '*',
-            redirect: '/admin/404'
+            redirect: '/404'
         }
     ]
 })

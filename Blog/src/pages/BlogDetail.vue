@@ -13,7 +13,7 @@
                     <span>&nbsp;{{ detail.create_time }}&nbsp;</span>
                     <span>&nbsp;{{ detail.views }} 阅读&nbsp;</span>
                 </div>
-                <div class="entry-content" v-html="detail.html"></div>
+                <div class="markdown-body entry-content" v-html="detail.html"></div>
             </div>
             <div style="height: 100%">
                 <Comment :blogid="blogid"></Comment>
@@ -159,9 +159,7 @@
         color: #FFFFFF;
     }
     .entry-content {
-        font-size: 14px;
         line-height: 1.5;
-        font-weight: 300;
         padding: 0 20px;
         color: #000;
         word-wrap:break-word;
@@ -171,7 +169,7 @@
     .entry-content a{
         text-decoration:none;
     }
-.entry-content p{text-indent:2em;}
+    .entry-content p{text-indent:2em;}
 
 
 /* CODE

@@ -40,30 +40,30 @@
                 items: [
                     {
                         icon: 'el-icon-lx-home',
-                        index: '/admin/dashboard',
+                        index: '/dashboard',
                         title: '系统首页'
                     },
                     {
                         icon: 'el-icon-lx-edit',
-                        index: '/admin/markdown',
+                        index: '/markdown',
                         title: '创作博客'
                     },
                     {
                         icon: 'el-icon-lx-cascades',
-                        index: '/admin/table',
+                        index: '/table',
                         title: '博文列表'
                     },
                     {
                         icon: 'el-icon-lx-copy',
-                        index: '/admin/monitor',
+                        index: '/monitor',
                         title: '系统监控'
                     },
                     {
                         icon: 'el-icon-bell',
-                        index: '/admin/message',
+                        index: '/message',
                         title: '系统消息'
                     },
-                    
+                    /*
                     {
                         icon: 'el-icon-lx-calendar',
                         index: '3',
@@ -118,7 +118,7 @@
                                 title: '404页面'
                             }
                         ]
-                    }
+                    }*/
                 ]
             }
         },

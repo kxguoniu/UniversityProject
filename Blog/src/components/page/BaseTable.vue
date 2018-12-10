@@ -48,7 +48,7 @@
                         <el-tooltip class="item" effect="dark" content="编辑" placement="bottom">
                             <el-button type="text" icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)"></el-button>
                         </el-tooltip>
-                        <router-link :to="'/admin/edit/'+ scope.row.id ">
+                        <router-link :to="'/edit/'+ scope.row.id ">
                             <el-tooltip class="item" effect="dark" content="修改" placement="bottom">
                                 <el-button type="text" icon="el-icon-lx-edit" style="color: blue;"></el-button>
                             </el-tooltip>

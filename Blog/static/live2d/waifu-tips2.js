@@ -84,7 +84,7 @@ $('.waifu-tool .fui-photo').click(function (){
 
 $.ajax({
     cache: true,
-    url: "static/live2d/waifu-tips.json",
+    url: "/static/live2d/waifu-tips.json",
     dataType: "json",
     success: function (result){
         $.each(result.mouseover, function (index, tips){
