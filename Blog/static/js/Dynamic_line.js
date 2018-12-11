@@ -1,4 +1,4 @@
-! function() {    
+! function(){
     //封装方法，压缩之后减少文件大小    
     function get_attribute(node, attr, default_value) {    
         return node.getAttribute(attr) || default_value;    
@@ -61,7 +61,7 @@
         }), frame_func(draw_canvas);    
     }    
     //创建画布，并添加到body中    
-    var the_canvas = document.createElement("canvas"), //画布    
+    var the_canvas = document.createElement("canvas"), //画布   
         config = get_config_option(), //配置    
         canvas_id = "c_n" + config.l, //canvas id    
         context = the_canvas.getContext("2d"), canvas_width, canvas_height,     

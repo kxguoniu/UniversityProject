@@ -9,7 +9,7 @@ import VueAwesomeSwiper from 'vue-awesome-swiper'
 import "babel-polyfill"
 import _global from './Global'
 import 'element-ui/lib/theme-chalk/index.css'
-import '../static/js/Dynamic_line.js'
+//import '../static/js/Dynamic_line.js'
 import 'swiper/dist/css/swiper.css'
 import '../static/css/icon.css'
 
@@ -17,8 +17,8 @@ import '../static/css/icon.css'
 Vue.config.productionTip = false
 Vue.prototype.$axios  = Axios
 //Vue.prototype.HOST = './local'
-Vue.prototype.HOST = './server'
-//Vue.prototype.HOST = '/'
+//Vue.prototype.HOST = './server'
+Vue.prototype.HOST = '/'
 Vue.prototype.GLOBAL = _global
 Vue.use(ElementUI, { size: 'small' })
 

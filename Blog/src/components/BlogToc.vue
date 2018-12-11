@@ -115,12 +115,12 @@
         width: 29%;
     }
     .blogtoc{
-        border: 1px solid #efefef;
+        border: 0px solid #efefef;
         margin-bottom: 30px;
     }
     .blogtoc a{
         text-decoration:none;
-        color: #999;
+        color: #524d4d;
     }
     .blogtoc p{
         display: block;

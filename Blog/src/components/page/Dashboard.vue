@@ -66,14 +66,9 @@
                 <el-card shadow="hover" style="height:403px;">
                     <div slot="header" class="clearfix">
                         <span>待办事项</span>
-                        <el-button style="float: right; padding: 3px 0" type="text">添加</el-button>
+                        <el-button style="float: right; padding: 3px 0" type="text" @click="addList">添加</el-button>
                     </div>
                     <el-table :data="todoList" :show-header="false" height="304" style="width: 100%;font-size:14px;">
-                        <el-table-column width="40">
-                            <template slot-scope="scope">
-                                <el-checkbox v-model="scope.row.status"></el-checkbox>
-                            </template>
-                        </el-table-column>
                         <el-table-column>
                             <template slot-scope="scope">
                                 <div class="todo-item" :class="{'todo-item-del': scope.row.status}">{{scope.row.title}}</div>
@@ -81,8 +76,12 @@
                         </el-table-column>
                         <el-table-column width="60">
                             <template slot-scope="scope">
-                                <i class="el-icon-edit"></i>
-                                <i class="el-icon-delete"></i>
+                                <el-tooltip class="item" effect="dark" content="编辑" placement="bottom">
+                                    <i class="el-icon-edit" style="cursor:pointer; color: #409EFF" @click="putList(scope.$index, scope.row)"></i>
+                                </el-tooltip>
+                                <el-tooltip class="item" effect="dark" content="删除" placement="bottom">
+                                    <i class="el-icon-delete" style="cursor:pointer; color: #ff0000" @click="delList(scope.$index, scope.row)"></i>
+                                </el-tooltip>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -97,10 +96,59 @@
             </el-col>
             <el-col :span="12">
                 <el-card shadow="hover">
-                    <schart ref="line" class="schart" canvasId="line" :data="data" type="line" :options="options2"></schart>
+                    <schart ref="line" class="schart" canvasId="line" :data="data2" type="line" :options="options2"></schart>
                 </el-card>
             </el-col>
         </el-row>
+
+
+        <!--添加-->
+        <el-dialog title="添加" :visible.sync="addstatus" width="30%">
+            <el-form ref="form" :model="form" label-width="80px">
+                <el-form-item label="添加事项">
+                    <el-input v-model="form.title"></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="addstatus = false">取 消</el-button>
+                <el-button type="primary" @click="addEvent">确 定</el-button>
+            </span>
+        </el-dialog>
+
+        <!--编辑事项-->
+        <el-dialog title="编辑" :visible.sync="putstatus" width="30%">
+            <el-form ref="form" :model="form">
+                <el-form-item>
+                    <div style="float: left; width: 60px; text-align: center;">
+                        <span solt="label" class="item-label">内&nbsp;容</span>
+                    </div>
+                    <div style="float: left; width: 250px">
+                        <el-input v-model="form.title" style="float: left"></el-input>
+                    </div>
+                </el-form-item>
+                <el-form-item>
+                    <div style="float: left; width: 60px; text-align: center;">
+                        <span solt="label" class="item-label">状&nbsp;态</span>
+                    </div>
+                    <div style="float: left; width: 250px">
+                        <el-button @click="changestatus">{{ form.status }}</el-button>
+                    </div>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="putstatus = false">取 消</el-button>
+                <el-button type="primary" @click="putEvent">确 定</el-button>
+            </span>
+        </el-dialog>
+
+        <!--删除提示框-->
+        <el-dialog title="提示" :visible.sync="delstatus" width="300px" center>
+            <div class="del-dialog-cnt">删除不可恢复，是否确定删除？</div>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="delstatus = false">取 消</el-button>
+                <el-button type="primary" @click="delEvent">确 定</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
@@ -116,70 +164,26 @@
                 message: 0,
                 blogsums: 0,
                 lasttime: '',
-                todoList: [
-                    {
-                        title: '用户权限控制',
-                        status: false,
-                    },
-                    {
-                        title: '用户个人信息展示',
-                        status: false,
-                    },
-                    {
-                        title: '账户密码修改',
-                        status: false,
-                    }, {
-                        title: '注册用户',
-                        status: false,
-                    },
-                    {
-                        title: '日志分析',
-                        status: false,
-                    },
-                    {
-                        title: '让我再想想...',
-                        status: true,
-                    }
-                ],
-                data: [
-                    {
-                        name: '2018/09/04',
-                        value: 1083
-                    },
-                    {
-                        name: '2018/09/05',
-                        value: 941
-                    },
-                    {
-                        name: '2018/09/06',
-                        value: 1139
-                    },
-                    {
-                        name: '2018/09/07',
-                        value: 816
-                    },
-                    {
-                        name: '2018/09/08',
-                        value: 327
-                    },
-                    {
-                        name: '2018/09/09',
-                        value: 228
-                    },
-                    {
-                        name: '2018/09/10',
-                        value: 1065
-                    }
-                ],
+                addstatus: false,
+                putstatus: false,
+                delstatus: false,
+                todoList: [],
+                data: [],
+                data2: [],
+                form: {
+                    id: -1,
+                    title: '',
+                    status: ''
+                },
                 options: {
                     title: '最近七天每天的用户访问量',
-                    showValue: false,
+                    showValue: true,
                     fillColor: 'rgb(45, 140, 240)',
                     bottomPadding: 30,
                     topPadding: 30
                 },
                 options2: {
-                    title: '最近七天用户访问趋势',
+                    title: '最近七天用户访问增长趋势',
                     fillColor: '#FC6FA1',
                     axisColor: '#008ACD',
                     contentColor: '#EEEEEE',
@@ -198,9 +202,11 @@
             }
         },
         created(){
-            this.handleListener();
-            this.changeDate();
+            //this.handleListener();
+            //this.changeDate();
             this.sumcount();
+            this.visinit()
+            this.todoinit()
         },
         activated(){
             this.handleListener();
@@ -239,6 +245,7 @@
                     item.name = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`
                 })
             },
+            // 修改数据2
             handleListener(){
                 bus.$on('collapse', this.handleBus);
                 // 调用renderChart方法对图表进行重新渲染
@@ -252,6 +259,131 @@
             renderChart(){
                 this.$refs.bar.renderChart();
                 this.$refs.line.renderChart();
+            },
+            // 查看事件
+            todoinit(){
+                var url = this.HOST + 'todolist'
+                this.$axios({
+                    method: 'get',
+                    url: url,
+                })
+                .then(res => {
+                    if (res.data.status == 0){
+                        this.todoList = res.data.data
+                        console.log(this.todoList)
+                    } else {
+                        this.$message.error(res.data.msg)
+                    }
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+            },
+            // 添加
+            addList(){
+                this.form = {title: ''}
+                this.addstatus = true
+            },
+            addEvent(){
+                var url = this.HOST + 'todolist'
+                this.$axios({
+                    method: 'post',
+                    url: url,
+                    data: this.form
+                })
+                .then(res => {
+                    if (res.data.status == 0){
+                        this.$message.success(res.data.msg)
+                        this.addstatus = false
+                        this.todoinit()
+                    } else {
+                        this.$message.error(res.data.msg)
+                    }
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+            },
+            // 编辑
+            putList(index, row){
+                console.log(row)
+                this.idx = index
+                this.form = {
+                    id: row.id,
+                    title: row.title,
+                    status: row.status
+                }
+                this.putstatus = true
+            },
+            putEvent(){
+                var url = this.HOST + 'todolist'
+                this.$axios({
+                    method: 'put',
+                    url: url,
+                    data: this.form
+                })
+                .then(res => {
+                    if (res.data.status == 0){
+                        this.$message.success(res.data.msg)
+                        this.todoinit()
+                        this.putstatus = false
+                    } else {
+                        this.$message.error(res.data.msg)
+                    }
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+            },
+            changestatus(){
+                this.form.status = !this.form.status
+            },
+            // 删除
+            delList(index, row){
+                this.idx = index
+                this.form = {
+                    id: row.id
+                }
+                this.delstatus = true
+            },
+            delEvent(){
+                var url = this.HOST + 'todolist'
+                this.$axios({
+                    method: 'delete',
+                    url: url,
+                    data: this.form.id
+                })
+                .then(res => {
+                    if (res.data.status == 0){
+                        this.$message.success(res.data.msg)
+                        this.todoinit()
+                        this.delstatus = false
+                    } else {
+                        this.$message.error(res.data.msg)
+                    }
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+            },
+            visinit(){
+                var url = this.HOST + 'visitor'
+                this.$axios({
+                    method: 'get',
+                    url: url
+                })
+                .then(res => {
+                    if (res.data.status == 0){
+                        this.data = res.data.data
+                        this.data2 = res.data.data2
+                        this.handleListener()
+                    } else {
+                        console.log(res.data.msg)
+                    }
+                })
+                .catch(error => {
+                    console.log(error)
+                })
             }
         }
     }

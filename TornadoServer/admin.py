@@ -29,6 +29,8 @@ class JsonDateTime(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime.datetime):
             return obj.strftime('%Y-%m-%d %H:%M:%S')
+        if isinstance(obj, datetime.date):
+            return obj.strftime('%Y-%m-%d')
         return super().default(obj)
 
 
@@ -711,6 +713,12 @@ class SearchHandler(BaseHandler):
             return self.write({'status':1, 'msg':'请求错误'})
 
 
+class ErrorHandler(BaseHandler):
+    def get(self):
+        self.send_error(404)
+
+    def write_error(self, status_code, **kwargs):
+        self.render('404.html')
 class CommentHandler(BaseHandler):
     '''
     评论
@@ -748,8 +756,11 @@ class CommentHandler(BaseHandler):
     #@tornado.web.authenticated
     def post(self):
         body = json.loads(self.request.body)
-        user = self.current_user['user']
-        img = self.current_user['img']
+        try:
+            user = self.current_user['user']
+            img = self.current_user['img']
+        except:
+            return self.write({'status':403, 'msg':'请先登录'})
         blogid = body['blogid']
         status = body['status']
         message = body['message']
@@ -774,13 +785,76 @@ class CommentHandler(BaseHandler):
                     floor = 1
             commsql = "insert into comment (user,message,create_time,floor,blog_id,img) values (%s,%s,%s,%s,%s,%s)"
             number = sqlconn.exec_sql(commsql,(user,message,now,floor,blogid,img))
-        if status >= 1 and not replyblog:
+            if number:
+                return self.write({'status':0, 'msg':'回复成功'})
+            else:
+                return self.write({'status':1, 'msg':'回复失败'})
+        elif status >= 1 and not replyblog:
             commsql = "insert into reply (user,message,create_time,comment_id,img,replyuser) values (%s,%s,%s,%s,%s,%s)"
             number = sqlconn.exec_sql(commsql,(user,message,now,replyid,img,replyuser))
             if number:
                 return self.write({'status':0, 'msg':'回复成功'})
             else:
                 return self.write({'status':1, 'msg':'回复失败'})
+
+
+class TodoHandler(BaseHandler):
+    def get(self):
+        todosql = "select id,title,status from todolist"
+        number,results = sqlconn.exec_sql_feach(todosql)
+        for item in results:
+            if item['status'] == 'false':
+                item['status'] = False
+            else:
+                item['status'] = True
+        self.write({'status':0, 'data':results})
+
+    def put(self):
+        body = json.loads(self.request.body)
+        todoid = body['id']
+        title = body['title']
+        status = body['status']
+        if status:
+            status = 'true'
+        else:
+            status = 'false'
+        todosql = "update todolist set title=%s,status=%s where id=%s"
+        number = sqlconn.exec_sql(todosql,(title,status,todoid))
+        if number:
+            return self.write({'status':0, 'msg':'修改成功'})
+        else:
+            return self.write({'status':1, 'msg':'修改失败'})
+
+    def post(self):
+        body = json.loads(self.request.body)
+        todosql = "insert into todolist (title,status) values (%s,%s)"
+        number = sqlconn.exec_sql(todosql,(body['title'],'false'))
+        if number:
+            return self.write({'status':0, 'msg':'创建成功'})
+        else:
+            return self.write({'status':1, 'msg':'创建失败'})
+
+    def delete(self):
+        body = json.loads(self.request.body)
+        todosql = "delete from todolist where id=%s"
+        number = sqlconn.exec_sql(todosql,(body))
+        if number:
+            return self.write({'status':0, 'msg':'删除成功'})
+        else:
+            return self.write({'status':1, 'msg':'删除失败'})
+
+
+class VisitorHandler(BaseHandler):
+    def get(self):
+        visql = "select time as name,sums as value from visitor order by time desc limit 7"
+        number,results = sqlconn.exec_sql_feach(visql)
+        results.reverse()
+        results2 = results[:]
+        for item,result in enumerate(results2):
+            if item != 0:
+                result['value'] += results2[item-1]['value']
+        self.write({'status':0, 'data':results, 'data2':results2})
+
 
 
 class Application(tornado.web.Application):
@@ -803,6 +877,9 @@ class Application(tornado.web.Application):
             (r'/countview', CountView),         #访问计数
             (r'/search', SearchHandler),        #搜索
             (r'/comment', CommentHandler),      #评论
+            (r'/todolist', TodoHandler),        #待办事项
+            (r'/visitor', VisitorHandler),      #七天访问量
+            (r'.*', ErrorHandler),              #捕捉错误页面
         ]
         settings = dict(
             log_function=Custom,

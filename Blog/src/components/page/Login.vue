@@ -71,7 +71,7 @@
             // 密码验证
             let passcheck = (rule, value, callback) => {
                 console.log(value)
-                if (value.length >= 1){
+                if (value.length >= 8){
                     for (var i=0, num=0, letter=0, LETTER=0; i<value.length; i++){
                         if (value.charCodeAt(i) >= 48 && value.charCodeAt(i) <= 57) {
                             num = 1
@@ -84,7 +84,7 @@
                             return callback(new Error('只能输入数字大小写字母'))
                         }
                     }
-                    if (num+letter+LETTER <= 3){
+                    if (num+letter+LETTER == 3){
                         callback()
                     } else {
                         this.registerForm.passwd = ''
@@ -155,7 +155,7 @@
                                 this.$router.push({ path:redict[1], query: {floor:true } })
                                 //this.$router.go(-1)
                             } else {
-                                this.$router.push('/admin/dashboard')
+                                this.$router.push('/dashboard')
                             }
                         } else {
                             this.$message.error(res.data.msg)

@@ -214,7 +214,7 @@
         margin:0 30px;
         padding: 10px 20px;
         height: auto;
-        background-color: #EEEEEE;
+        background-color: #a7a7a7;
         font-size: 14px;
         line-height: 1.428571429;
     }

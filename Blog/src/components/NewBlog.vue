@@ -69,7 +69,7 @@
         font-size: 15px;
     }
     .hot1 {
-        background-color: #FFFFFF;
+        background-color: #a7a7a7;
         height: 20px;
         padding: 8px 15px;
         font-size: 15px;

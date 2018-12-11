@@ -57,7 +57,7 @@
     }
 </script>
 
-<style type="text/css" scoped>
+<style type="text/css">
     .search {
         height: 47px;
         background-color: #3D4450;
@@ -69,5 +69,8 @@
     .search-input {
         width: 100%;
         font-size: 25px;
+    }
+    .search-input ..el-input{
+        background-color: #737373;
     }
 </style>
