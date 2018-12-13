@@ -70,7 +70,16 @@
         width: 100%;
         font-size: 25px;
     }
-    .search-input ..el-input{
+    .search-input .el-input{
         background-color: #737373;
+    }
+    .search .el-input__inner{
+        background-color: #929292;
+    }
+    .el-autocomplete-suggestion__wrap{
+        background-color: #c1c1c1 !important;
+    }
+    .el-autocomplete-suggestion li{
+        color: #16171b;
     }
 </style>

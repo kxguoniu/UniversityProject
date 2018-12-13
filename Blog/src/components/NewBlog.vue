@@ -74,6 +74,9 @@
         padding: 8px 15px;
         font-size: 15px;
         border: 1px solid #dddddd;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
     }
     .hot-name {
         color: #FFFFFF;

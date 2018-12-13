@@ -104,10 +104,9 @@
         content: "\E60C"
     }
     .body-right{
-        margin-top: 80;
-        overflow-y:scroll;
         float: right;
         width: 31%;
+        overflow: hidden;
     }
     .right-bind{
         position: fixed;

@@ -19,7 +19,7 @@ module.exports = {
             }
         },
         "/server":{
-            target: "http://www.52pyc.cn/",
+            target: "http://123.206.95.123/",
             changeOrigin: true,
             pathRewrite:{
                 '^/server': ""

@@ -91,7 +91,7 @@
         <el-row :gutter="20">
             <el-col :span="12">
                 <el-card shadow="hover">
-                    <schart ref="bar" class="schart" canvasId="bar" :data="data" type="bar" :options="options"></schart>
+                    <schart ref="bar" class="schart" canvasId="bar" :data="data1" type="bar" :options="options"></schart>
                 </el-card>
             </el-col>
             <el-col :span="12">
@@ -168,7 +168,7 @@
                 putstatus: false,
                 delstatus: false,
                 todoList: [],
-                data: [],
+                data1: [],
                 data2: [],
                 form: {
                     id: -1,
@@ -270,7 +270,6 @@
                 .then(res => {
                     if (res.data.status == 0){
                         this.todoList = res.data.data
-                        console.log(this.todoList)
                     } else {
                         this.$message.error(res.data.msg)
                     }
@@ -374,8 +373,9 @@
                 })
                 .then(res => {
                     if (res.data.status == 0){
-                        this.data = res.data.data
+                        this.data1 = res.data.data
                         this.data2 = res.data.data2
+                        console.log(this.data1, this.data2)
                         this.handleListener()
                     } else {
                         console.log(res.data.msg)
@@ -387,7 +387,6 @@
             }
         }
     }
-
 </script>
 
 

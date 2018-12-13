@@ -37,7 +37,7 @@
     <script type="text/javascript">
         loadlive2d("live2d", "/static/live2d/model.json");
     </script>
-    <canvas id="Snow" style="position: fixed; top: 0px; left: 0px; z-index: -1; opacity: 0.5;"></canvas>
+    <canvas id="Snow" style="position: fixed; top: 0px; left: 0px; z-index: 99999; opacity: 1; pointer-events: none;"></canvas>
     <script async>
         if(true){
             (function() {
@@ -50,6 +50,8 @@
             (function() {
                 var flakes = [],
                     canvas = document.getElementById("Snow"),
+                    sowlist = ['❄','❉','❅','❆','✻','✼','❇','❈','❊'],
+                    sowsize = ["30px Arial","27px Arial","23px Arial","20px Arial","18px Arial","14px Arial","10px Arial"],
                     ctx = canvas.getContext("2d"),
                     flakeCount = 200,
                     mX = -100,
@@ -101,10 +103,8 @@
                         if (flake.x >= canvas.width || flake.x <= 0) {
                             reset(flake);
                         }
-                
-                        ctx.beginPath();
-                        ctx.arc(flake.x, flake.y, flake.size, 0, Math.PI * 2);
-                        ctx.fill();
+                        ctx.font=flake.textsize;
+                        ctx.fillText(flake.texts, flake.x, flake.y);
                     }
                     requestAnimationFrame(snow);
                 };
@@ -117,6 +117,8 @@
                     flake.velY = flake.speed;
                     flake.velX = 0;
                     flake.opacity = (Math.random() * 0.5) + 0.3;
+                    flake.texts = sowlist[Math.round(Math.random()*(sowlist.length-1))];
+                    flake.textsize = sowsize[Math.round(Math.random()*(sowlist.length-1))];
                 }
                 
                 function init() {
@@ -137,12 +139,13 @@
                             stepSize: (Math.random()) / 30 * 1,
                             step: 0,
                             angle: 180,
-                            opacity: opacity
+                            opacity: opacity,
+                            texts: sowlist[Math.round(Math.random()*(sowlist.length-1))],
+                            textsize: sowsize[Math.round(Math.random()*(sowlist.length-1))]
                         });
                     }
                     snow();
                 };
-                
                 document.addEventListener("mousemove", function(e) {
                     mX = e.clientX,
                     mY = e.clientY

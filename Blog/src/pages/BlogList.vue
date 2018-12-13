@@ -169,9 +169,11 @@
 
 <style type="text/css" scoped>
     .html-body{
-        margin: 0 3%;
-        padding: 0 1%;
+        min-width: 800px;
+        padding: 0 3%;
+        margin: 0 1%;
         margin-top: 80px;
+        overflow: hidden;
     }
     .body-right{
         float: right;

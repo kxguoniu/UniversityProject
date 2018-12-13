@@ -27,13 +27,17 @@
             </div>
         </div>
         <router-view></router-view>
-        <div class="footer html-bottom"></div>
+        <Footer></Footer>
     </div>
 </template>
 
 <script type="text/javascript">
+    import Footer from '../components/Footer'
     export default{
         name:"index",
+        components:{
+            Footer
+        },
         data(){
             return{
                 headers:[],

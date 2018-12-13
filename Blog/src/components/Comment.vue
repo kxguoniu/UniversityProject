@@ -59,9 +59,6 @@
                 </li>
             </ul>
         </div>
-        <div style="height: 200px;">
-            
-        </div>
     </div>
 </template>
 

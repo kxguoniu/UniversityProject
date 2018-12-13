@@ -719,6 +719,8 @@ class ErrorHandler(BaseHandler):
 
     def write_error(self, status_code, **kwargs):
         self.render('404.html')
+
+
 class CommentHandler(BaseHandler):
     '''
     评论
@@ -846,10 +848,11 @@ class TodoHandler(BaseHandler):
 
 class VisitorHandler(BaseHandler):
     def get(self):
+        import copy
         visql = "select time as name,sums as value from visitor order by time desc limit 7"
         number,results = sqlconn.exec_sql_feach(visql)
         results.reverse()
-        results2 = results[:]
+        results2 = copy.deepcopy(results)
         for item,result in enumerate(results2):
             if item != 0:
                 result['value'] += results2[item-1]['value']

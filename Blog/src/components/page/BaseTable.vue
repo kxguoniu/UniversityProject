@@ -42,8 +42,8 @@
                     </template>
                 </el-table-column>
                 <el-table-column prop="title" label="标题" width="auto">
-                </el-table-column>
-                <el-table-column label="操作" width="100" align="center">
+                </el-table-column> 
+                <el-table-column label="操作" width="120" align="center">
                     <template slot-scope="scope">
                         <el-tooltip class="item" effect="dark" content="编辑" placement="bottom">
                             <el-button type="text" icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)"></el-button>
@@ -356,7 +356,7 @@
     }
     .red{
         color: #ff0000;
-        margin: 0 0;
+        margin: 0 0 !important;
     }
     .download{
         margin: 0 0;

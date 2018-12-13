@@ -26,11 +26,13 @@
 <script type="text/javascript">
     import BlogToc from '../components/BlogToc'
     import Comment from '../components/Comment'
+    import Footer from '../components/Footer'
     export default{
         name:"blogdetail",
         components:{
             BlogToc,
             Comment,
+            Footer
         },
         data(){
             return{
@@ -121,9 +123,11 @@
 
 <style type="text/css">
     .html-body{
-        margin: 0 3%;
-        padding: 0 1%;
+        min-width: 800px;
+        padding: 0 3%;
+        margin: 0 1%;
         margin-top: 80px;
+        overflow: hidden;
     }
     .body-left{
         float: left;
@@ -170,7 +174,15 @@
         text-decoration:none;
     }
     .entry-content p{text-indent:2em;}
-
+    .markdown-body table tr {
+        background-color: #ababab;
+    }
+    .markdown-body table tr:nth-child(2n){
+        background-color: #ababab;
+    }
+    .reply-input .el-textarea__inner{
+        background-color: #8d8d8e;
+    }
 
 /* CODE
 =============================================================================*/

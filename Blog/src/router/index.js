@@ -16,7 +16,7 @@ function loadview(view){
 }
 
 export default new Router({
-    mode: 'history',
+    //mode: 'history',
     linkActiveClass:"active",
     routes: [
         {
@@ -127,18 +127,18 @@ export default new Router({
                     meta: { title: '权限测试', permission: true }
                 },
                 {
-                    path: '/404',
-                    name: 'NotFount',
-                    component: loadview('404'),
-                    meta: { title: '404' }
-                },
-                {
                     path: '/403',
                     name: 'Errors',
                     component: loadview('403'),
                     meta: { title: '403' }
                 }
             ]
+        },
+        {
+            path: '/404',
+            name: 'NotFount',
+            component: loadIndex('404'),
+            meta: { title: '404' }
         },
         {
             path: '*',
