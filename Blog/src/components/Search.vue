@@ -1,6 +1,6 @@
 <template lang="html">
-    <div class="search">
-        <div>
+    <div>
+        <div class="search">
             <el-autocomplete
                 class="search-input"
                 v-model="state"

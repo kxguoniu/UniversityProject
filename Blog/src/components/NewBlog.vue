@@ -4,9 +4,11 @@
             <span class="hot-name">最新文章</span>
         </div>
         <div class="hot1" v-for="(newblog,index) in newblogs" :key="index">
+
             <router-link :to="'/blogdetail/'+ newblog.id">
-                <a><span class="hot-name1">{{ newblog.title }}</span></a>
+                <span>{{ newblog.title }}</span>
             </router-link>
+
         </div>
     </div>
 </template>
@@ -81,10 +83,11 @@
     .hot-name {
         color: #FFFFFF;
     }
-    .hot-name1 {
-        color: #000000;
-    }
     .hot1 a{
         text-decoration:none;
+        color: #000000;
+    }
+    .hot1 a:hover{
+        color: red;
     }
 </style>

@@ -26,6 +26,7 @@
             <div v-if="flash" key="1" class="pagination">
                 <el-pagination
                     background
+                    class="pagination2"
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
                     :current-page="currentPage"
@@ -38,6 +39,7 @@
             <div v-else key="2" class="pagination">
                 <el-pagination
                     background
+                    class="pagination2"
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
                     :current-page="currentPage"
@@ -169,19 +171,21 @@
 
 <style type="text/css" scoped>
     .html-body{
-        min-width: 800px;
         padding: 0 3%;
         margin: 0 1%;
         margin-top: 80px;
-        overflow: hidden;
+        margin-bottom: 50px;
+        flex: 1;
     }
-    .body-right{
-        float: right;
-        width: 31%;
-    }
-    .body-left{
-        float: left;
-        width: 65%;
+    @media (min-width: 800px){
+        .body-right{
+            float: right;
+            width: 31%;
+        }
+        .body-left{
+            float: left;
+            width: 65%;
+        }
     }
     .blog {
         background-color: #d8d4d473 !important;
@@ -233,5 +237,23 @@
     }
     .pagination{
         text-align: center;
+        word-wrap: break-word;
+    }
+    .pagination2{
+        white-space: normal;
+    }
+    @media (max-width: 800px){
+        .body-right{
+            position: relative;
+            margin: 0 auto;
+            width: 100%;
+            max-width: 600px;
+        }
+        .body-left{
+            width: 100%;
+            margin: 0 auto;
+            max-width: 700px;
+            padding-bottom: 30px;
+        }
     }
 </style>

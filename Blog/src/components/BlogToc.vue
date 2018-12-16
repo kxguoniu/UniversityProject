@@ -103,15 +103,27 @@
     .icon:before{
         content: "\E60C"
     }
-    .body-right{
-        float: right;
-        width: 31%;
-        overflow: hidden;
+    @media (min-width: 800px){
+        .body-right{
+            float: right;
+            width: 31%;
+        }
+        .right-bind{
+            position: fixed;
+            top: 80px;
+            width: 29%;
+        }
     }
-    .right-bind{
-        position: fixed;
-        top: 80px;
-        width: 29%;
+    @media (max-width: 800px){
+        .body-right{
+            position: relative;
+            margin: 0 auto;
+            width: 100%;
+            max-width: 600px;
+        }
+        .right-bind{
+            width: 100%;
+        }
     }
     .blogtoc{
         border: 0px solid #efefef;

@@ -1,5 +1,6 @@
 <template lang="html">
     <div v-if="status" id="body-left" class="html-body" key="1">
+        <BlogToc :toc="toc"></BlogToc>
         <div class="body-left">
             <div class="blog">
                 <div class="blog-head">
@@ -19,7 +20,6 @@
                 <Comment :blogid="blogid"></Comment>
             </div>
         </div>
-        <BlogToc :toc="toc"></BlogToc>
     </div>
 </template>
 
@@ -123,15 +123,25 @@
 
 <style type="text/css">
     .html-body{
-        min-width: 800px;
         padding: 0 3%;
         margin: 0 1%;
         margin-top: 80px;
-        overflow: hidden;
+        margin-bottom: 50px;
+        flex: 1;
     }
-    .body-left{
-        float: left;
-        width: 65%;
+    @media (min-width: 800px){
+        .body-left{
+            float: left;
+            width: 65%;
+        }
+    }
+    @media (max-width: 800px){
+        .body-left{
+            width: 100%;
+            margin: 0 auto;
+            max-width: 700px;
+            padding-bottom: 30px;
+        }
     }
     .blog {
         background-color: #d8d4d473 !important;
@@ -180,10 +190,19 @@
     .markdown-body table tr:nth-child(2n){
         background-color: #ababab;
     }
+    .markdown-body img{
+        cursor: pointer;
+        transition: all 0.6s;
+    }
+    .markdown-body img:hover{
+        transform: scale(1.05);
+    }
     .reply-input .el-textarea__inner{
         background-color: #8d8d8e;
     }
-
+    .entry-content code{
+        color: red;
+    }
 /* CODE
 =============================================================================*/
 
