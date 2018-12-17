@@ -5,7 +5,7 @@
         </div>
         <div class="guidang1" v-for="item in bloggroup">
             <router-link :to="{ path:'/categroay/1', query:{time:item.time} }">
-                <a><span class="guidang-name1">{{ item.flag }}({{ item.nums }})</span></a>
+                <span class="guidang-name1">{{ item.flag }}({{ item.nums }})</span>
             </router-link>
         </div>
     </div>
@@ -41,19 +41,20 @@
         margin-top: 40px;
     }
     .guidang1 {
-        background-color: #a7a7a7;
+        background-color: #d6d8d5;
         height: 20px;
         padding: 8px 15px;
         font-size: 15px;
-        border: 1px solid #dddddd;
+        border: 1px solid #fff;
     }
     .guidang-name {
         color: #FFFFFF;
     }
-    .guidang-name1 {
-        color: #000000;
-    }
     .guidang1 a{
         text-decoration:none;
+        color: #000;
+    }
+    .guidang1 a:hover{
+        color: #f31717;
     }
 </style>

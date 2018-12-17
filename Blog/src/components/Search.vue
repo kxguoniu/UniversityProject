@@ -74,12 +74,16 @@
         background-color: #737373;
     }
     .search .el-input__inner{
-        background-color: #929292;
+        /*background-color: #929292;*/
     }
     .el-autocomplete-suggestion__wrap{
-        background-color: #c1c1c1 !important;
+        /*background-color: #c1c1c1 !important;*/
     }
     .el-autocomplete-suggestion li{
         color: #16171b;
+    }
+    .el-autocomplete-suggestion li:hover{
+        background-color: #0b445b !important;
+        color: #fff;
     }
 </style>

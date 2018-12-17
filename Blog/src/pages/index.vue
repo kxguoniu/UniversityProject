@@ -45,7 +45,7 @@
         },
         data(){
             return{
-                width: '',
+                width: window.innerWidth,
                 menustatus: false,
                 activestatus: 1,
                 headers:[],

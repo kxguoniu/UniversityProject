@@ -188,7 +188,7 @@
         }
     }
     .blog {
-        background-color: #d8d4d473 !important;
+        background-color: #bdbdbd73 !important;
         width: 100%;
         margin-bottom: 35px;
     }
@@ -220,7 +220,7 @@
         margin:0 30px;
         padding: 10px 20px;
         height: auto;
-        background-color: #a7a7a7;
+        background-color: #fff;
         font-size: 14px;
         line-height: 1.428571429;
     }

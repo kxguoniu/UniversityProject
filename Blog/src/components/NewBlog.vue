@@ -71,23 +71,24 @@
         font-size: 15px;
     }
     .hot1 {
-        background-color: #a7a7a7;
+        background-color: #d6d8d5;
         height: 20px;
         padding: 8px 15px;
         font-size: 15px;
-        border: 1px solid #dddddd;
+        border: 1px solid #fff;
         text-overflow: ellipsis;
         white-space: nowrap;
         overflow: hidden;
+        color: #000;
     }
     .hot-name {
         color: #FFFFFF;
     }
     .hot1 a{
-        text-decoration:none;
-        color: #000000;
+        text-decoration: none;
+        color: #000;
     }
     .hot1 a:hover{
-        color: red;
+        color: #f31717;
     }
 </style>

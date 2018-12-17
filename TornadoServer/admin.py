@@ -20,7 +20,7 @@ import os
 define("port", default=8888, help="run on the given port", type=int)
 LOCKFILE = os.path.dirname(os.path.abspath(__file__)) + "/system.lock"
 dict_session = {}
-
+blogcache = {}
 
 class JsonDateTime(json.JSONEncoder):
     '''
@@ -61,11 +61,29 @@ def Custom(handler):
                    handler.request.version, handler.request.method, handler.request.uri, request_time)
 
 
+def memorize(cachetime=3600):
+    '''
+    缓存blog
+    '''
+    def wrappr(function):
+        def _memorize(*args, **kwargs):
+            _self = args[0]
+            blog_id = _self.get_argument('id','-1')
+            if blog_id in blogcache and (datetime.datetime.now() - blogcache[blog_id]['time']).total_seconds() < cachetime:
+                print('cache',blog_id)
+                return _self.write(blogcache[blog_id]['data'])
+            else:
+                results = function(*args, **kwargs)
+                nowtime = datetime.datetime.now()
+                blogcache[blog_id] = {'data':results, 'time':now}
+                return _self.write(results)
+        return _memorize
+    return wrappr
+
+
 class BaseHandler(tornado.web.RequestHandler):
     #def __init__(self, *args, **kwargs):
     #    super().__init__(*args, **kwargs)
-
-        
 
     def get_current_user(self):
         session_id = self.get_secure_cookie("session_id")
@@ -132,7 +150,8 @@ class LoginHandler(BaseHandler):
         if status:
             results = results[0]
             session_id = str(uuid.uuid1())
-            dict_session[session_id] = {'user':results['name'], 'img':results['img']}
+            now = datetime.datetime.now()
+            dict_session[session_id] = {'user':results['name'], 'img':results['img'], 'time':now}
             self.set_secure_cookie("session_id", session_id)
             re_data = {'status':0, 'msg':'登录成功'}
         else:
@@ -183,7 +202,6 @@ class CateGoryHandler(BaseHandler):
         :flag   分类
         :page   页数
         :size   页面大小
-        :total  博文总数量
         :select 筛选条件
         :value  筛选内容
         '''

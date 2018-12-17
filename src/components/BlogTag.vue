@@ -3,11 +3,12 @@
         <div class="biaoqian">
             <span class="biaoqian-name">标签云</span>
         </div>
-        <div class="biaoqian1" v-for="tag in tags">
-            <router-link :to="{ path:'/categroay/1', query:{id:tag.id} }">
-                <a>{{ tag.name }}</a>
-            </router-link>
-        </div>
+        <router-link :keys="index" v-for="(tag,index) in tags" :to="{ path:'/categroay/1', query:{id:tag.id} }">
+            <div class="biaoqian1" >
+                {{ tag.name }}
+            </div>
+        </router-link>
+        
     </div>
 </template>
 

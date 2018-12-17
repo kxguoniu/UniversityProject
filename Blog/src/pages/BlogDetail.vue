@@ -198,7 +198,7 @@
         transform: scale(1.05);
     }
     .reply-input .el-textarea__inner{
-        background-color: #8d8d8e;
+        /*background-color: #8d8d8e;*/
     }
     .entry-content code{
         color: red;
