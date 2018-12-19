@@ -114,14 +114,17 @@
                     background: 'rgba(0,0,0,0.7)'
                 });
                 if (this.TagId){
-                    var url = this.HOST + "tagblog";
-                    var flag = this.TagId
+                    var url = this.HOST + "bloglist";
+                    var flag = this.TagId;
+                    var search = "tag"
                 } else if (this.GroupId){
-                    var url = this.HOST + 'timegroup';
-                    var flag = this.GroupId
+                    var url = this.HOST + 'bloglist';
+                    var flag = this.GroupId;
+                    var search = "group"
                 } else {
-                    var url = this.HOST + "category";
-                    var flag = this.CategoryId
+                    var url = this.HOST + "bloglist";
+                    var flag = this.CategoryId;
+                    var search = "category"
                 }
                 if (this.lasturl != url + flag) {
                     this.flash = !this.flash
@@ -131,6 +134,7 @@
                 }
                 this.$axios.get(url, {
                     params:{
+                        search: search,
                         flag: flag,
                         page: this.listQuery.page,
                         limit: this.listQuery.limit,

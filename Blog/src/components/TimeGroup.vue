@@ -4,7 +4,7 @@
             <span class="guidang-name">归档</span>
         </div>
         <div class="guidang1" v-for="item in bloggroup">
-            <router-link :to="{ path:'/categroay/1', query:{time:item.time} }">
+            <router-link :to="{ path:'/blog/1', query:{time:item.time,search:'group'} }">
                 <span class="guidang-name1">{{ item.flag }}({{ item.nums }})</span>
             </router-link>
         </div>
@@ -20,8 +20,15 @@
             }
         },
         created(){
-            var url = this.HOST + 'timegroup'
-            this.$axios.get(url)
+            var url = this.HOST + 'bloglist'
+            this.$axios({
+                method: 'get',
+                url: url,
+                params:{
+                    search: 'group',
+                    flag: '1'
+                }
+            })
             .then(res => {
                 this.bloggroup = res.data.data;
             })

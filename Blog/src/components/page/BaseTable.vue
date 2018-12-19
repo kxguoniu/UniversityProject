@@ -163,7 +163,7 @@
             }
         },
         created() {
-            this.getList();
+            this.init();
             var url = this.HOST + 'taglist'
             this.$axios({
                 url: url,
@@ -176,13 +176,41 @@
         },
         methods: {
             // 获取博文列表
-            getList() {
-                let url = this.HOST + 'category'
+            init() {
+                let url = this.HOST + 'bloglist'
                 this.$axios({
                     method: 'get',
                     url: url,
                     params:{
+                        search: 'category',
                         flag: '1', //分类
+                        page: this.listQuery.page,
+                        limit: this.listQuery.limit,
+                    }
+                })
+                .then(res => {
+                    if (res.data.status == 0) {
+                        this.blogList = res.data.data;
+                        this.total = res.data.total;
+                    } else {
+                        this.$message.error(res.data.msg)
+                    }
+                })
+                .catch(error =>{
+                    console.log(error);
+                })
+            },
+            // 搜索博文
+            getList(){
+                if (this.select == '' || this.select_word == ''){
+                    this.init()
+                    return
+                }
+                let url = this.HOST + 'search'
+                this.$axios({
+                    method: 'put',
+                    url: url,
+                    params:{
                         page: this.listQuery.page,
                         limit: this.listQuery.limit,
                         select: this.select,
@@ -244,7 +272,7 @@
             // 多选删除
             delAll() {
                 const length = this.del_list.length;
-                let url = this.HOST + 'category';
+                let url = this.HOST + 'blog';
                 let arr = {};
                 for (let i = 0; i < length; i++) {
                     arr[i] = this.del_list[i]['id'];
@@ -253,7 +281,7 @@
                     method: 'delete',
                     url: url,
                     params: {
-                        id: arr,
+                        ids: arr,
                     }
                 })
                 .then(res => {
@@ -274,7 +302,7 @@
             },
             // 保存编辑
             saveEdit() {
-                let url = this.HOST + 'category';
+                let url = this.HOST + 'blog';
                 this.$axios({
                     method: 'put',
                     url: url,
@@ -302,7 +330,7 @@
             },
             // 确定删除
             deleteRow(){
-                let url = this.HOST + 'category'
+                let url = this.HOST + 'blog'
                 this.$axios({
                     method: 'delete',
                     url: url,

@@ -11,7 +11,7 @@
                     active-text-color="#ffd04b"
                     router
                     >
-                    <el-menu-item :index="'/categroay/' + item.id" :key="index" v-for="(item,index) in headers">{{ item.name }}</el-menu-item>
+                    <el-menu-item :index="'/blog/' + item.id" :key="index" v-for="(item,index) in headers">{{ item.name }}</el-menu-item>
                 </el-menu>
             </div>
             <div v-if="width >= 850" class="heade2">
@@ -103,7 +103,7 @@
             },
             // 导航跳转
             menuPush(val){
-                var urls = '/categroay/' + val
+                var urls = '/blog/' + val
                 this.activestatus = val
                 this.menustatus = !this.menustatus
                 this.$router.push(urls)

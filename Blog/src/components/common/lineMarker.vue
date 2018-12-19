@@ -117,7 +117,7 @@ export default {
                     // 标题
                     title: {
                         top: 20,
-                        text: '内存监控',
+                        text: '内存信息',
                         textStyle: {
                             fontWeight: 'normal',
                             fontSize: 16,

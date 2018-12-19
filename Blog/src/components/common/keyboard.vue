@@ -125,7 +125,7 @@ export default {
           },
           title: {
             top: 20,
-            text: '流量监控',
+            text: '流量信息',
             textStyle: {
                 fontWeight: 'normal',
                 fontSize: 16,

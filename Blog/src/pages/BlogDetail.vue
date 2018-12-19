@@ -90,7 +90,7 @@
                         console.log(error)
                     })
                 }
-                var url = this.HOST + "detail";
+                var url = this.HOST + "blog";
                 this.$axios.get(url, {
                     params:{
                         id: this.blogid,

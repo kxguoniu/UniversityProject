@@ -159,7 +159,7 @@
             // 编辑博文,请求
             if (this.isEdit){
                 const id = this.$route.params && this.$route.params.id
-                let url = this.HOST + 'detail'
+                let url = this.HOST + 'blog'
                 this.$axios({
                     method: 'get',
                     url: url,
@@ -238,7 +238,7 @@
             submit(){
                 console.log(this.postForm);
                 if (this.isEdit) {
-                    let url = this.HOST + 'category';
+                    let url = this.HOST + 'blog';
                     this.$axios({
                         url: url,
                         method: 'put',
@@ -260,7 +260,7 @@
                         this.$message.error('提交失败！')
                     })
                 } else {
-                    let url = this.HOST + 'category';
+                    let url = this.HOST + 'blog';
                     var postForm = this.postForm;
                     this.$axios({
                         url: url,

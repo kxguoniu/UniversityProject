@@ -16,17 +16,17 @@ function loadview(view){
 }
 
 export default new Router({
-    mode: 'history',
+    //mode: 'history',
     linkActiveClass:"active",
     routes: [
         {
             path: '/',
             name: 'Index',
             component: loadIndex('Index'),
-            redirect: "/categroay/1",
+            redirect: "/blog/1",
             children:[
                 {
-                    path: '/categroay/:id',
+                    path: '/blog/:id',
                     name: 'BlogList',
                     component: loadIndex('BlogList')
                 },

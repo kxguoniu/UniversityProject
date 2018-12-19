@@ -117,7 +117,7 @@ export default {
                     // 标题
                     title: {
                         top: 20,
-                        text: '负载监控',
+                        text: '负载信息',
                         textStyle: {
                             fontWeight: 'normal',
                             fontSize: 16,

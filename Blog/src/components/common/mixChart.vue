@@ -118,7 +118,7 @@ export default {
         backgroundColor: '#344b58',
         // 标题
         title: {
-          text: 'CPU监控',
+          text: 'CPU信息',
           x: '20',
           top: '20',
           //标题字体
