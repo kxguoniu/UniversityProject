@@ -5,7 +5,7 @@
         </div>
         <div class="guidang1" v-for="item in bloggroup">
             <router-link :to="{ path:'/blog/1', query:{time:item.time,search:'group'} }">
-                <span class="guidang-name1">{{ item.flag }}({{ item.nums }})</span>
+                <span id="group" class="guidang-name1">{{ item.flag }}({{ item.nums }})</span>
             </router-link>
         </div>
     </div>

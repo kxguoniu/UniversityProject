@@ -138,30 +138,36 @@
             },
             // 已读
             handleRead(val) {
+                /*
                 for (let i = 0; i < this.lists.length; i++) {
                     if (val.id == this.lists[i].id) {
                         this.lists[i].status = 1
                     }
                 }
+                */
                 this.submit(val.id,1)
             },
             // 删除
             handleDel(val) {
+                /*
                 for (let i = 0; i < this.lists.length; i++) {
                     if (val.id == this.lists[i].id) {
                         this.lists[i].status = 2
                     }
                 }
+                */
                 this.submit(val.id,2)
                 bus.$emit('message', this.datatwo(2).length)
             },
             // 回收
             handleRestore(val) {
+                /*
                 for (let i = 0; i < this.lists.length; i++) {
                     if (val.id == this.lists[i].id) {
                         this.lists[i].status = 1
                     }
                 }
+                */
                 this.submit(val.id,1)
                 bus.$emit('message', this.datatwo(2).length)
             },
@@ -178,7 +184,7 @@
                 dellist.filter((d) => {
                     this.submit(d.id, end)
                 })
-                bus.$emit('message', this.datatwo(2).length)
+                bus.$emit('message', this.datatwo(0).length)
             }
         },
         computed: {

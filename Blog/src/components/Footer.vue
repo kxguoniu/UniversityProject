@@ -4,12 +4,12 @@
             <div class="footer_1">
                 <div class="aboutme">
                     <p><span class="titlename">关于我们：</span></p>
-                    <p><span class="aboutcontent1"><a href="https://github.com/kxguoniu">https://github.com/kxguoniu</a></span></p>
+                    <p><span class="aboutcontent1"><a id="aboutme" href="https://github.com/kxguoniu">https://github.com/kxguoniu</a></span></p>
                 </div>
                 <div class="callme">
                     <p><span class="titlename">联系我们：</span></p>
-                    <p><span class="aboutcontent1">QQ</span><span style="color: #fff; font-size: 16px;">1320741337</span></p>
-                    <p><span class="aboutcontent2">Email</span><span style="color: #fff; font-size: 16px;">13213790823@163.com</span></p>
+                    <p><span class="aboutcontent1">QQ</span><span id="callme" style="color: #fff; font-size: 16px;">1320741337</span></p>
+                    <p><span class="aboutcontent2">Email</span><span id="callme" style="color: #fff; font-size: 16px;">13213790823@163.com</span></p>
                 </div>
             </div>
             <div class="footer_1">

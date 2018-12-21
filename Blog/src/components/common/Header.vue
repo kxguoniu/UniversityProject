@@ -67,7 +67,7 @@
             .then(res => {
                 if (res.data.status == 0) {
                     this.lists = res.data.data
-                    this.message = this.datatwo(2).length
+                    this.message = this.datatwo(0).length
                 } else {
                     console.log(res.data.msg)
                 }

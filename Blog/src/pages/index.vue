@@ -11,11 +11,11 @@
                     active-text-color="#ffd04b"
                     router
                     >
-                    <el-menu-item :index="'/blog/' + item.id" :key="index" v-for="(item,index) in headers">{{ item.name }}</el-menu-item>
+                    <el-menu-item id="menuindex" :index="'/blog/' + item.id" :key="index" v-for="(item,index) in headers">{{ item.name }}</el-menu-item>
                 </el-menu>
             </div>
             <div v-if="width >= 850" class="heade2">
-                <router-link to="/admin">
+                <router-link id="houtai" to="/admin">
                     后台管理
                 </router-link>
             </div>

@@ -154,3 +154,11 @@ class Cache():
             session[item] = {'time':(now - self.session[item]['time'])/60.0,'data':self.session[item]['data']}
         
         return {'data':data, 'timeout':timeout, 'blog':blog, 'session':session, 'new':self.new}
+
+    def _clear(self):
+        self.data = {}
+        self.blog = {}
+        self.timeout = {}
+        self.session = {}
+        self.new = {}
+        return True

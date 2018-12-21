@@ -6,7 +6,7 @@
         <div class="hot1" v-for="(newblog,index) in newblogs" :key="index">
 
             <router-link :to="'/blogdetail/'+ newblog.id">
-                <span>{{ newblog.title }}</span>
+                <span id="newblog">{{ newblog.title }}</span>
             </router-link>
 
         </div>

@@ -1,6 +1,84 @@
 {
     "mouseover": [
         {
+            "selector": "#menuindex",
+            "text": ["要去看看 <span style=\"color:#0099cc;\">{text}</span> 分类下的文章么？"]
+        },
+        {
+            "selector": "#newblog",
+            "text": ["要去看看 <span style=\"color:#0099cc;\">{text}</span> 这篇文章么？"]
+        },
+        {
+            "selector": "#group",
+            "text": ["要去看看 <span style=\"color:#0099cc;\">{text}</span> 内的文章么？"]
+        },
+        {
+            "selector": "#tags",
+            "text": ["要去看看 <span style=\"color:#0099cc;\">{text}</span> 标签下的文章么？"]
+        },
+        {
+            "selector": "#readall",
+            "text": ["想要了解这篇文章么？"]
+        },
+        {
+            "selector": "#aboutme",
+            "text": ["想要了解主人更多的信息么？"]
+        },
+        {
+            "selector": "#callme",
+            "text": ["发现主人出没地点！", "这里是主人的联系方式"]
+        },
+        {
+            "selector": ".friend_a",
+            "text": ["要去 <span style=\"color:#0099cc;\">{text}</span> 看看么？"]
+        },
+        {
+            "selector": "#search_title",
+            "text": ["找不到想看的内容？搜索看看吧"]
+        },
+        {
+            "selector": "#comment_reply",
+            "text": ["要吐槽些什么呢"]
+        },
+        {
+            "selector": "#csubmit",
+            "text": ["要提交了吗，首次评论需要审核，请耐心等待~"]
+        },
+        {
+            "selector": "#login_now",
+            "text": ["现在去登陆吧~"]
+        },
+        {
+            "selector": "img",
+            "text": ["点击图片可以放大呢"]
+        },
+        {
+            "selector": ".break",
+            "text": ["回到开始的地方吧"]
+        },
+        {
+            "selector": "#houtai",
+            "text": ["去后台看看吧"]
+        },
+        {
+            "selector": ".number",
+            "text": ["去第 <span style=\"color:#0099cc;\">{text}</span> 页看看么？"]
+        },
+        {
+            "selector": ".btn-prev",
+            "text": ["去上一页看看吧"]
+        },
+        {
+            "selector": ".btn-next",
+            "text": ["去下一页看看吧"]
+        },
+        {
+            "selector": ".el-select-dropdown__item",
+            "text": ["想要切换到 <span style=\"color:#0099cc;\">{text}</span> 么？"]
+        },
+
+
+        {
             "selector": ".container a[href^='http']",
             "text": ["要看看 <span style=\"color:#0099cc;\">{text}</span> 么？"]
         },

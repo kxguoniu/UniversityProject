@@ -1,14 +1,14 @@
 <template>
     <div>
         <div id="reply" class="reply-input">
-            <el-input type="textarea" :autosize="{ minRows:2, maxRows:5}" placeholder="说点什么吧..." v-model="reply" maxlength="20" @focus="changebutton" @blur="changebutton"></el-input>
+            <el-input id="comment_reply" type="textarea" :autosize="{ minRows:2, maxRows:5}" placeholder="说点什么吧..." v-model="reply" maxlength="20" @focus="changebutton" @blur="changebutton"></el-input>
             <div class="reply-button" v-if="button && !login">
                 <span>登录才能回复呦</span>
-                <el-button style="float: right;" size="mini" type="danger" round @click="loginnow">立马登录</el-button>
+                <el-button id="login_now" style="float: right;" size="mini" type="danger" round @click="loginnow">立马登录</el-button>
             </div>
             <div class="reply-button" v-if="button && login">
                 <span>还能输入{{ finallength }}字</span>
-                <el-button style="float: right;" size="mini" type="danger" round @click="review">发表评论</el-button>
+                <el-button id="csubmit" style="float: right;" size="mini" type="danger" round @click="review">发表评论</el-button>
             </div>
         </div>
         <div class="comment-list-box">

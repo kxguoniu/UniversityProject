@@ -2,6 +2,7 @@
     <div>
         <div class="search">
             <el-autocomplete
+                id = "search_title"
                 class="search-input"
                 v-model="state"
                 :fetch-suggestions="querySearchAsync"

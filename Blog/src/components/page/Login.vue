@@ -107,7 +107,7 @@
             }
             return {
                 ruleForm: {
-                    username: 'admin',
+                    username: 'kxguoniu',
                     password: '123456'
                 },
                 registerForm: {

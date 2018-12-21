@@ -78,6 +78,16 @@ def CheckPermission(level):
     return warpper
 
 
+def is_login(func):
+    def warpper(*args, **kwargs):
+        _self = args[0]
+        if _self.current_user:
+            return func(*args, **kwargs)
+        else:
+            return _self.write({'status':1, 'msg':'请先登录'})
+    return warpper
+
+
 class BaseHandler(tornado.web.RequestHandler):
     #def __init__(self, *args, **kwargs):
     #    super().__init__(*args, **kwargs)
@@ -154,7 +164,7 @@ class LoginHandler(BaseHandler):
         if search:
             return self.write({'status':1, 'msg':'用户已存在'})
         else:
-            regisql = "insert into author (name,img,passwd) values (%s,%s,%s)"
+            regisql = "insert into author (name,img,passwd,group_id) values (%s,%s,%s,3)"
             sqlconn.exec_sql(regisql,(user,"/static/img/img.jpg",pwd))
             return self.write({'status':0, 'msg':'注册成功'})
 
@@ -982,8 +992,13 @@ class VisitorHandler(BaseHandler):
 
 
 class CacheHandler(BaseHandler):
+    @is_login
     def get(self):
-        results = BlogCache._get()
+        ids = self.get_argument('id','')
+        if ids and self.current_user['user'] == 'admin':
+            results = BlogCache._clear()
+        else:
+            results = BlogCache._get()
         self.write(results)
 
 
@@ -1070,6 +1085,7 @@ def main():
         # CheckCache
         #CC = threading.Timer(3600, CheckCache, (BlogCache,))
         #CC.start()
+
         #app.listen(options.port)
         [i.setFormatter(LogFormatter()) for i in logging.getLogger().handlers]
         app.listen(8888)

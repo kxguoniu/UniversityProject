@@ -4,7 +4,7 @@
             <span class="biaoqian-name">标签云</span>
         </div>
         <router-link :key="index" v-for="(tag,index) in tags" :to="{ path:'/blog/1', query:{id:tag.id} }">
-            <div class="biaoqian1">
+            <div id="tags" class="biaoqian1">
                 {{ tag.name }}
             </div>
         </router-link>

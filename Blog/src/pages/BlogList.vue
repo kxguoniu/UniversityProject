@@ -18,7 +18,7 @@
                 <div class="blog-execrpt"><span>{{ blog.digested }}     </span></div>
                 <div class="blog-link">
                     <router-link :to="'/blogdetail/'+ blog.id">
-                        <a>阅读全文</a>
+                        <a id="readall">阅读全文</a>
                     </router-link>
                 </div>
             </div>
