@@ -16,9 +16,9 @@ import '../static/css/icon.css'
 
 Vue.config.productionTip = false
 Vue.prototype.$axios  = Axios
-Vue.prototype.HOST = './local'
+//Vue.prototype.HOST = './local'
 //Vue.prototype.HOST = './server/api/'
-//Vue.prototype.HOST = '/api/'
+Vue.prototype.HOST = '/api/'
 Vue.prototype.GLOBAL = _global
 Vue.use(ElementUI, { size: 'small' })
 
@@ -65,7 +65,6 @@ router.beforeEach((to, from, next) => {
             } else {
                 next({ name: 'Login', params: { path: route.path } })
                 //next({ path: "/login", query: {redirect: location.host} })
-                console.log(location)
             }
         } else {
             next()

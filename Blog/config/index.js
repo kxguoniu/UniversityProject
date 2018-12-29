@@ -24,6 +24,13 @@ module.exports = {
             pathRewrite:{
                 '^/server': ""
             }
+        },
+        "/api":{
+            target: "http://123.206.95.123/",
+            changeOrigin: true,
+            pathRewrite:{
+                '^/api': ""
+            }
         }
     },
 

@@ -133,6 +133,7 @@ class Cache():
         for item in self.blog:
             if now - self.blog[item]['time'] > 3600:
                 del self.blog[item]
+        self.checksession()
 
     def _get(self):
         data = {}
@@ -152,7 +153,7 @@ class Cache():
             blog[item] = {'time':(now - self.blog[item]['time'])/60.0, 'frist':(now - self.blog[item]['frist'])/60.0}
         for item in self.session:
             session[item] = {'time':(now - self.session[item]['time'])/60.0,'data':self.session[item]['data']}
-        
+
         return {'data':data, 'timeout':timeout, 'blog':blog, 'session':session, 'new':self.new}
 
     def _clear(self):
@@ -161,4 +162,4 @@ class Cache():
         self.timeout = {}
         self.session = {}
         self.new = {}
-        return True
+        return {'status':True}

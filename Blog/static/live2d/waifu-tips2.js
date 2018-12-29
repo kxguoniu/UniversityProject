@@ -142,7 +142,7 @@ $.ajax({
     }else {
         // 拿到浏览器地址栏里的所有地址
         // 如果是前端主页
-        if (window.location.href == 'http://www.52pyc.cn/#/categroay/1' || window.location.href == 'http://52pyc.cn/#/categroay/1') { //如果是主页
+        if (window.location.href == 'http://www.52pyc.cn/categroay/1' || window.location.href == 'http://52pyc.cn/categroay/1') { //如果是主页
             var now = (new Date()).getHours();
             if (now > 23 || now <= 5) {
                 text = '你是夜猫子呀？这么晚还不睡觉，明天起的来嘛';

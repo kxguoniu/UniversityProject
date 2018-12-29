@@ -1,7 +1,7 @@
 <template>
     <div class="appbody">
         <div style="width: 100%;" :class="{'html-bind':status}">
-            <div v-if="width >= 850" :class="{'html-header2':true}">
+            <div v-if="width >= 800" :class="{'html-header2':true}">
                 <el-menu
                     :default-active="'1'"
                     id="searchBar"
@@ -14,7 +14,7 @@
                     <el-menu-item id="menuindex" :index="'/blog/' + item.id" :key="index" v-for="(item,index) in headers">{{ item.name }}</el-menu-item>
                 </el-menu>
             </div>
-            <div v-if="width >= 850" class="heade2">
+            <div v-if="width >= 800" class="heade2">
                 <router-link id="houtai" to="/admin">
                     后台管理
                 </router-link>

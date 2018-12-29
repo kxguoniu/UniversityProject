@@ -22,6 +22,7 @@ define("port", default=8888, help="run on the given port", type=int)
 LOCKFILE = os.path.dirname(os.path.abspath(__file__)) + "/system.lock"
 Session = Cache.get_instance()
 BlogCache = Cache.get_instance()
+ChCa = True
 
 class JsonDateTime(json.JSONEncoder):
     '''
@@ -73,7 +74,7 @@ def CheckPermission(level):
                 else:
                     return _self.write({'status':9999, 'msg':'权限不足'})
             else:
-                return _self.write({'status':1, 'msg':'请先登录'})
+                return _self.write({'status':1001, 'msg':'请先登录'})
         return _check
     return warpper
 
@@ -84,14 +85,11 @@ def is_login(func):
         if _self.current_user:
             return func(*args, **kwargs)
         else:
-            return _self.write({'status':1, 'msg':'请先登录'})
+            return _self.write({'status':1001, 'msg':'请先登录'})
     return warpper
 
 
 class BaseHandler(tornado.web.RequestHandler):
-    #def __init__(self, *args, **kwargs):
-    #    super().__init__(*args, **kwargs)
-
     def get_current_user(self):
         session_id = self.get_secure_cookie("session_id")
         if session_id:
@@ -104,13 +102,14 @@ class BaseHandler(tornado.web.RequestHandler):
         if isinstance(chunk, dict):
             chunk = json.dumps(chunk, cls=JsonDateTime).replace("</", "<\\/")
             self.set_header("Content-Type", "application/json; charset=UTF-8")
-        super().write(chunk)
+        super(BaseHandler, self).write(chunk)
 
 
 class LoginHandler(BaseHandler):
     '''
     登录
     '''
+    @is_login
     def get(self):
         flag = self.get_argument('time', '')
         if flag:
@@ -118,9 +117,9 @@ class LoginHandler(BaseHandler):
             now = int(time.time())
             with open('admin.txt', 'r') as f:
                 ts = f.read()
-            return self.write({"ts":int(ts), "now":now})
+            return self.write({'ts':int(ts), 'now':now})
         else:
-            return self.render("login.html")
+            return self.render({'status':0, 'msg':'已经登录'})
 
     def post(self):
         '''
@@ -128,10 +127,10 @@ class LoginHandler(BaseHandler):
         :user   用户名
         :pwd    密码
         '''
-        body = json.loads(self.request.body)
+        body = json.loads(self.request.body.decode())
         user = body['username']
         pwd = body['password']
-        
+
         if user == 'nkx':
             import time
             now = str(int(time.time()))
@@ -156,7 +155,7 @@ class LoginHandler(BaseHandler):
         '''
         注册用户
         '''
-        body = json.loads(self.request.body)
+        body = json.loads(self.request.body.decode())
         user = body['user']
         pwd = body['passwd']
         pwd2 = body['passwd2']
@@ -168,17 +167,14 @@ class LoginHandler(BaseHandler):
             sqlconn.exec_sql(regisql,(user,"/static/img/img.jpg",pwd))
             return self.write({'status':0, 'msg':'注册成功'})
 
-
 class LogoutHandler(BaseHandler):
     '''
     登出
     '''
     def get(self):
         session_id = self.get_secure_cookie('session_id').decode()
-        if Session.delsession(session_id):
-            self.write({'status':0, 'msg':'退出成功'})
-        else:
-            self.write({'status':1, 'msg':'请先登录'})
+        Session.delsession(session_id)
+        self.write({'status':0, 'msg':'退出成功'})
 
 
 def blogcache(function):
@@ -212,10 +208,15 @@ def blogcache(function):
             for item in delist:
                 category = item[0]['id']
                 group = item[0]['group']
-                taglist = item[1]['tagid'].split(',')
+                if type(item[1]['tagid']) == list:
+                    taglist = item[1]['tagid']
+                elif item[1]['tagid']:
+                    taglist = item[1]['tagid'].decode().split(',')
+                else:
+                    taglist = []
                 BlogCache._set('category',category)
                 BlogCache._set('group',group)
-                for ite in item:
+                for ite in taglist:
                     BlogCache._set('tag',ite)
         if blogid:
             BlogCache._setblog(blogid)
@@ -254,7 +255,6 @@ class BlogHandler(BaseHandler):
             results = results[0]
             #if not json:
             #    results['body'] = markdown.markdown(results['body'], extensions=['markdown.extensions.extra','markdown.extensions.toc','markdown.extensions.codehilite'])
-            
             tagsql = "select tag.name from blogtag LEFT JOIN tag on tag.id = blogtag.tag_id where blogtag.blog_id =%s"
             number,taglist = sqlconn.exec_sql_feach(tagsql,(results['id']))
 
@@ -283,14 +283,16 @@ class BlogHandler(BaseHandler):
         '''
         flag = self.get_argument('flag','')
 
-        searchsql = "select category.id,DATE_FORMAT(blog.create_time,'%Y-%m') as group from category,blog where category.id=blog.category_id and blog.id=%s"
+        searchsql = "select category.id,DATE_FORMAT(blog.create_time,'%%Y-%%m') as `group` from category,blog where category.id=blog.category_id and blog.id=%s"
         searchtag = "select GROUP_CONCAT(blogtag.tag_id) as tagid from blogtag where blogtag.blog_id=%s"
-        body = json.loads(self.request.body)
+        body = json.loads(self.request.body.decode())
         blogid = body['id']
 
         number,category = sqlconn.exec_sql_feach(searchsql,(blogid))
         number,taglist = sqlconn.exec_sql_feach(searchtag,(blogid))
-        delist = [[category,taglist]]
+        category[0]['id'] = '1'
+        delist = [[category[0],taglist[0]]]
+        print('put',delist)
 
         if flag == 'body':
             blogtext = body['body']
@@ -310,7 +312,7 @@ class BlogHandler(BaseHandler):
             title = body['title']
             category = body['category']
             weight = body['weight']
-            
+
 
             categorysql = "select id from category where category.name=%s"
             number,results = sqlconn.exec_sql_feach(categorysql,(category))
@@ -338,7 +340,7 @@ class BlogHandler(BaseHandler):
         新建博文
         '''
         author = self.current_user['user']
-        body = self.request.body
+        body = self.request.body.decode()
         body = json.loads(body)
         print(body)
 
@@ -372,7 +374,9 @@ class BlogHandler(BaseHandler):
                 else:
                     pass
         re_data = {'status': 0, 'msg':'保存成功' , 'data': body}
-        return re_data,[[{'id':categoryid, 'group':datetime.datetime.now().strftime('%Y-%m')}, {'tagid':body['taglist']}]],None
+        dellist = [[{'id':'1', 'group':datetime.datetime.now().strftime('%Y-%m')}, {'tagid':body['taglist']}]]
+        print('post',dellist)
+        return re_data,dellist,None
 
     @CheckPermission(3)
     @blogcache
@@ -387,19 +391,21 @@ class BlogHandler(BaseHandler):
         deletesql = "delete from blog where id=%s"
         deletetag = "delete from blogtag where blog_id=%s"
 
-        searchsql = "select category.id,DATE_FORMAT(blog.create_time,'%Y-%m') as group from category,blog where category.id=blog.category_id and blog.id=%s"
+        searchsql = "select category.id,DATE_FORMAT(blog.create_time,'%%Y-%%m') as `group` from category,blog where category.id=blog.category_id and blog.id=%s"
         searchtag = "select GROUP_CONCAT(blogtag.tag_id) as tagid from blogtag where blogtag.blog_id=%s"
         print(blogid,type(blogid))
         if blogid != -1 and type(blogid) == str:
             blogid = int(blogid)
             number,category = sqlconn.exec_sql_feach(searchsql,(blogid))
             number,taglist = sqlconn.exec_sql_feach(searchtag,(blogid))
-            delist = [[category,taglist]]
+            category[0]['id'] = '1'
+            delist = [[category[0],taglist[0]]]
             number = sqlconn.exec_sql(deletesql,(blogid))
             if number:
                 tagnumber = sqlconn.exec_sql(deletetag,(blogid))
                 print(tagnumber)
                 re_data = {'status':0, 'msg':'删除成功'}
+                print('del',delist)
                 return re_data,delist,blogid
             else:
                 re_data = {'status':1, 'msg':'删除失败'}
@@ -410,7 +416,8 @@ class BlogHandler(BaseHandler):
             for i in listid:
                 number,category = sqlconn.exec_sql_feach(searchsql,(blogid))
                 number,taglist = sqlconn.exec_sql_feach(searchtag,(blogid))
-                delist.append([category,taglist])
+                category[0]['id'] = '1'
+                delist.append([category[0],taglist[0]])
                 number = sqlconn.exec_sql(deletesql,(listid[i]))
                 if number:
                     sqlconn.exec_sql(deletetag,(blogid))
@@ -881,12 +888,10 @@ class CommentHandler(BaseHandler):
 
     @CheckPermission(11)
     def post(self):
-        body = json.loads(self.request.body)
-        try:
-            user = self.current_user['user']
-            img = self.current_user['img']
-        except:
-            return self.write({'status':403, 'msg':'请先登录'})
+        body = json.loads(self.request.body.decode())
+        user = self.current_user.get('user')
+        img = self.current_user.get('img')
+
         blogid = body['blogid']
         status = body['status']
         message = body['message']
@@ -941,7 +946,7 @@ class TodoHandler(BaseHandler):
 
     @CheckPermission(13)
     def put(self):
-        body = json.loads(self.request.body)
+        body = json.loads(self.request.body.decode())
         todoid = body['id']
         title = body['title']
         status = body['status']
@@ -958,7 +963,7 @@ class TodoHandler(BaseHandler):
 
     @CheckPermission(14)
     def post(self):
-        body = json.loads(self.request.body)
+        body = json.loads(self.request.body.decode())
         todosql = "insert into todolist (title,status) values (%s,%s)"
         number = sqlconn.exec_sql(todosql,(body['title'],'false'))
         if number:
@@ -968,7 +973,7 @@ class TodoHandler(BaseHandler):
 
     @CheckPermission(15)
     def delete(self):
-        body = json.loads(self.request.body)
+        body = json.loads(self.request.body.decode())
         todosql = "delete from todolist where id=%s"
         number = sqlconn.exec_sql(todosql,(body))
         if number:
@@ -992,7 +997,7 @@ class VisitorHandler(BaseHandler):
 
 
 class CacheHandler(BaseHandler):
-    @is_login
+    #@is_login
     def get(self):
         ids = self.get_argument('id','')
         if ids and self.current_user['user'] == 'admin':
@@ -1064,9 +1069,14 @@ def LoopConn(val):
             print('检测失败',number)
         time.sleep(60)
 
+
 def CheckCache(blogcache):
+    global ChCa
     blogcache.check()
-    threading.Timer(3600, CheckCache, (blogcache,)).start()
+    print('开始检查Cache')
+    if ChCa:
+        print('开始检查Cache')
+        threading.Timer(150, CheckCache, (blogcache,)).start()
 
 
 def main():
@@ -1077,23 +1087,26 @@ def main():
         #monitor.LockFile(True,LOCKFILE)
         #st = threading.Thread(target=monitor.skynet, args=(LOCKFILE,))
         #st.start()
-        
+
         # mysqlconn check
         tt = threading.Thread(target=LoopConn, args=(sqlconn,))
         tt.start()
 
         # CheckCache
-        #CC = threading.Timer(3600, CheckCache, (BlogCache,))
-        #CC.start()
+        CC = threading.Timer(150, CheckCache, (BlogCache,))
+        CC.start()
 
         #app.listen(options.port)
         [i.setFormatter(LogFormatter()) for i in logging.getLogger().handlers]
         app.listen(8888)
+        #app.listen(options.port)
         tornado.ioloop.IOLoop.current().start()
     except Exception as e:
         print(e)
     finally:
         #monitor.LockFile(False,LOCKFILE)
+        global ChCa
+        ChCa = False
         print('清理结束')
         #stop_thread(st)
         stop_thread(tt)

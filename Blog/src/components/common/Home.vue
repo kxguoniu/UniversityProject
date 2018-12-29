@@ -30,6 +30,13 @@
         components:{
             vHead, vSidebar, vTags
         },
+        create(){
+            var url = this.HOST + 'login'
+            this.$axios.get(url)
+            .then(res => {
+                var asd = res.data.data.status
+            })
+        },
         created(){
             bus.$on('collapse', msg => {
                 this.collapse = msg;

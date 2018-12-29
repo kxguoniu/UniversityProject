@@ -13,10 +13,10 @@ import _global from './Global'
 
 Vue.config.productionTip = false
 Vue.prototype.$axios  = Axios
-Vue.prototype.HOST = './local'
+//Vue.prototype.HOST = './local'
 //Vue.prototype.HOST = './server'
+Vue.prototype.HOST = '/'
 Vue.prototype.GLOBAL = _global
-//Vue.prototype.HOST = '/'
 Vue.use(ElementUI)
 
 
