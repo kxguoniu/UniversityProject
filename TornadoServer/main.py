@@ -1007,6 +1007,28 @@ class CacheHandler(BaseHandler):
         self.write(results)
 
 
+class TemplateHandler(tornado.web.RequestHandler):
+    def get(self, ids):
+        headsql = "select title,keywords,digested from blog where id=%s"
+        number,results = sqlconn.exec_sql_feach(headsql, (ids,))
+        print(ids,results)
+        if number:
+            title = results[0]['title']
+            title += " | 小牛运维站"
+            keywords = results[0]['keywords']
+            description = results[0]['digested']
+        else:
+            title = "小牛运维站"
+            keywords = "python,小牛,django,tornado,线程,asyncio,async/await,协程,异步,多线程"
+            description = ""
+        heads = {
+            "title": title,
+            "keywords": keywords,
+            "description": description,
+        }
+        self.render("detail.html", **heads)
+
+
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
@@ -1026,6 +1048,7 @@ class Application(tornado.web.Application):
             (r'/todolist', TodoHandler),        #待办事项
             (r'/visitor', VisitorHandler),      #七天访问量
             (r'/cache', CacheHandler),
+            (r'/blogdetail/(?P<ids>\d*)', TemplateHandler), # 模板
             (r'.*', ErrorHandler),              #捕捉错误页面
         ]
         settings = dict(

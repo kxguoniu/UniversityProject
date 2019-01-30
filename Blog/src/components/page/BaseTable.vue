@@ -19,17 +19,17 @@
                 <el-input v-model="select_word" placeholder="筛选关键词" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="search" @click="getList">搜索</el-button>
             </div>
-            <el-table :data="blogList" border class="table" ref="multipleTable" @selection-change="handleSelectionChange">
+            <el-table :data="blogList" border class="table" ref="multipleTable" @selection-change="handleSelectionChange" @sort-change="Soft">
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
-                <el-table-column prop="create_time" label="日期" sortable width="180">
+                <el-table-column prop="create_time" label="日期" sortable="custom" width="180">
                 </el-table-column>
                 <el-table-column prop="author" label="作者" width="80">
                 </el-table-column>
                 <el-table-column prop="category" label="分类" width="80">
                 </el-table-column>
-                <el-table-column prop="views" label="流量" width="60">
+                <el-table-column prop="views" label="流量" sortable="custom" width="80">
                 </el-table-column>
-                <el-table-column label="权重" width="100">
+                <el-table-column prop="weight" label="权重" sortable="custom" width="100">
                     <template slot-scope="scope">
                         <el-rate
                             v-model="scope.row.weight"
@@ -68,7 +68,7 @@
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
                     :current-page="currentPage"
-                    :page-sizes="[1, 10, 20, 50, 100, 200, 400]"
+                    :page-sizes="[1, 5, 10, 20, 50, 100, 200]"
                     :page-size="20"
                     layout="total, sizes, prev, pager, next, jumper"
                     :total="total">
@@ -176,6 +176,33 @@
         },
         methods: {
             // 获取博文列表
+            Soft(val){
+                var soft = val.order
+                var colum = val.prop
+                var softlist = this.blogList
+                var length = softlist.length
+                var middle
+                for (let i=0; i<length; i++){
+                    for (let j=i; j<length; j++){
+                        if (softlist[i][colum] > softlist[j][colum]){
+                            if (soft == "descending"){
+                                middle = softlist[j]
+                                softlist[j] = softlist[i]
+                                softlist[i] = middle
+                            }
+                        }else{
+                            if (soft == "ascending"){
+                                middle = softlist[j]
+                                softlist[j] = softlist[i]
+                                softlist[i] = middle
+                            }
+                        }
+                    }
+                }
+                for (let i=0; i<length; i++){
+                    Vue.set(this.blogList, i, softlist[i])
+                }
+            },
             init() {
                 let url = this.HOST + 'bloglist'
                 this.$axios({
