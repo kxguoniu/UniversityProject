@@ -38,7 +38,7 @@
             <p>
                 Copyright © 2018-2018 小牛运维站 All Rights Reserved.
             </p>
-            <p><span>京ICP备18064525号  <a href="https://www.cnzz.com/stat/website.php?web_id=1275785308" target="_blank" title="站长统计">站长统计</a></span></p>
+            <p><span><a href="http://beian.miit.gov.cn" target="_blank">京ICP备18064525号</a>  <a href="https://www.cnzz.com/stat/website.php?web_id=1275785308" target="_blank" title="站长统计">站长统计</a></span></p>
         </div>
     </div>
 </template>
