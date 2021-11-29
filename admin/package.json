@@ -13,7 +13,7 @@
     "babel-polyfill": "^6.23.0",
     "echarts": "^4.2.0-rc.2",
     "element-ui": "^2.4.5",
-    "mavon-editor": "^2.5.4",
+    "mavon-editor": "^2.8.2",
     "node-sass": "^4.10.0",
     "sass-loader": "^7.1.0",
     "url-parse": "^1.4.4",
