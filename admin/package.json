@@ -16,7 +16,7 @@
     "mavon-editor": "^2.5.4",
     "node-sass": "^4.10.0",
     "sass-loader": "^7.1.0",
-    "url-parse": "^1.4.4",
+    "url-parse": "^1.5.9",
     "vue": "^2.5.16",
     "vue-cropperjs": "^2.2.0",
     "vue-quill-editor": "3.0.6",
